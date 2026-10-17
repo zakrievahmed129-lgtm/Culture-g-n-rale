@@ -201,20 +201,34 @@
     setHomeMode(b.dataset.mode);
   });
 
+  const homeCategorySelect = $('#home-category');
+  let selectedCategory = localStorage.getItem('qb_category') || 'all';
+  if (homeCategorySelect) {
+    homeCategorySelect.value = selectedCategory;
+    homeCategorySelect.addEventListener('change', () => {
+      selectedCategory = homeCategorySelect.value;
+      localStorage.setItem('qb_category', selectedCategory);
+      Sound.click();
+    });
+  }
+
   $('#btn-quick').addEventListener('click', () => {
     ensureProfile();
-    socket.emit('quickPlay', { mode: selectedMode });
+    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
+    socket.emit('quickPlay', { mode: selectedMode, category: cat });
     showQueue({ mode: selectedMode, count: 1, needed: selectedMode === 'ffa' ? 4 : (selectedMode * 2) });
   });
 
   $('#btn-create').addEventListener('click', () => {
     ensureProfile();
-    socket.emit('createRoom', { mode: selectedMode });
+    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
+    socket.emit('createRoom', { mode: selectedMode, category: cat });
   });
 
   $('#btn-bots').addEventListener('click', () => {
     ensureProfile();
-    socket.emit('playWithBots', { mode: selectedMode, botCount: selectedMode === 'ffa' ? 5 : undefined });
+    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
+    socket.emit('playWithBots', { mode: selectedMode, botCount: selectedMode === 'ffa' ? 5 : undefined, category: cat });
   });
 
   const codeInput = $('#input-code');
@@ -250,7 +264,8 @@
 
   $('#btn-queue-bots').addEventListener('click', (e) => {
     const m = e.currentTarget.dataset.mode || selectedMode;
-    socket.emit('playWithBots', { mode: m, botCount: m === 'ffa' ? 5 : undefined });
+    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
+    socket.emit('playWithBots', { mode: m, botCount: m === 'ffa' ? 5 : undefined, category: cat });
   });
 
   // ─────────── Salon & Paramètres ───────────

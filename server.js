@@ -91,7 +91,7 @@ function validMode(m) {
 const otherTeam = (t) => (t === 'red' ? 'blue' : 'red');
 
 // ─────────────────────────── rooms ───────────────────────────
-function createRoom(mode = 'ffa', isPrivate = true) {
+function createRoom(mode = 'ffa', isPrivate = true, initialSettings = {}) {
   const room = {
     code: makeCode(),
     mode: validMode(mode), // 'ffa' | 1 | 2 | 3
@@ -101,9 +101,9 @@ function createRoom(mode = 'ffa', isPrivate = true) {
     players: new Map(),
     teamScores: { red: 0, blue: 0 },
     settings: {
-      durationMs: DEFAULT_GAME_DURATION,
-      questionMs: DEFAULT_QUESTION_TIME,
-      category: 'all',
+      durationMs: initialSettings.durationMs || DEFAULT_GAME_DURATION,
+      questionMs: initialSettings.questionMs || DEFAULT_QUESTION_TIME,
+      category: initialSettings.category || 'all',
     },
     deck: [],
     qNum: 0,
@@ -271,17 +271,60 @@ function startCountdown(room) {
   }, COUNTDOWN_MS);
 }
 
-function drawQuestion(room) {
-  if (room.deck.length === 0) {
-    let pool = QUESTIONS;
-    if (room.settings.category && room.settings.category !== 'all') {
-      const filtered = QUESTIONS.filter((q) => q.c === room.settings.category);
-      if (filtered.length >= 10) pool = filtered;
+function getCategoryQuestions(cat) {
+  if (!cat || cat === 'all') return QUESTIONS;
+  const c = String(cat).toLowerCase().trim();
+
+  const filtered = QUESTIONS.filter((q) => {
+    const qCat = (q.c || '').toLowerCase().trim();
+    if (qCat === c) return true;
+
+    // Correspondances intelligentes :
+    if (c === 'jeux vidéo' || c === 'jeux video' || c === 'gaming') {
+      return qCat === 'jeux vidéo' || qCat === 'jeux video' || qCat === 'pop culture';
     }
-    room.deck = shuffle(pool.map((_, i) => i));
+    if (c === 'pop culture' || c === 'pop culture & web') {
+      return qCat === 'pop culture' || qCat === 'jeux vidéo';
+    }
+    if (c === 'cinéma' || c === 'cinema' || c === 'séries' || c === 'series' || c.includes('cinéma')) {
+      return qCat === 'cinéma' || qCat === 'cinema' || qCat === 'séries' || qCat === 'series';
+    }
+    if (c === 'sciences' || c.includes('science')) {
+      return qCat === 'sciences' || qCat === 'maths';
+    }
+    if (c === 'animaux' || c === 'nature') {
+      return qCat === 'animaux' || qCat === 'nature';
+    }
+    if (c === 'histoire') {
+      return qCat === 'histoire';
+    }
+    if (c === 'géographie' || c === 'geographie') {
+      return qCat === 'géographie' || qCat === 'geographie';
+    }
+    if (c === 'sport') {
+      return qCat === 'sport';
+    }
+    if (c === 'art' || c === 'littérature' || c === 'litterature') {
+      return qCat === 'art' || qCat === 'littérature' || qCat === 'litterature';
+    }
+    if (c === 'musique') {
+      return qCat === 'musique';
+    }
+    if (c === 'divers') {
+      return qCat === 'divers' || qCat === 'langue' || qCat === 'cuisine' || qCat === 'insolite';
+    }
+    return false;
+  });
+
+  return filtered.length > 0 ? filtered : QUESTIONS;
+}
+
+function drawQuestion(room) {
+  if (!room.deck || room.deck.length === 0) {
+    const pool = getCategoryQuestions(room.settings.category);
+    room.deck = shuffle([...pool]);
   }
-  const idx = room.deck.pop();
-  return QUESTIONS[idx] || QUESTIONS[0];
+  return room.deck.pop();
 }
 
 function nextQuestion(room) {
@@ -550,7 +593,7 @@ io.on('connection', (socket) => {
   socket.on('playWithBots', (d = {}) => {
     const mode = validMode(d.mode);
     leaveEverything(socket);
-    const room = createRoom(mode, true);
+    const room = createRoom(mode, true, { category: d.category });
     if (mode === 'ffa') {
       addPlayer(room, socket);
       const botCount = Number(d.botCount) || 5;
@@ -566,7 +609,7 @@ io.on('connection', (socket) => {
   socket.on('createRoom', (d = {}) => {
     leaveEverything(socket);
     const mode = validMode(d.mode);
-    const room = createRoom(mode, true);
+    const room = createRoom(mode, true, { category: d.category });
     addPlayer(room, socket, mode === 'ffa' ? 'solo' : 'red');
     broadcast(room);
   });
@@ -644,8 +687,9 @@ io.on('connection', (socket) => {
     if (d.questionMs && [10000, 15000, 20000].includes(Number(d.questionMs))) {
       room.settings.questionMs = Number(d.questionMs);
     }
-    if (d.category) {
+    if (d.category !== undefined) {
       room.settings.category = String(d.category);
+      room.deck = []; // Réinitialise le deck pour générer les questions de la nouvelle catégorie
     }
     broadcast(room);
   });

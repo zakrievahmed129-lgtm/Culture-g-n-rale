@@ -231,6 +231,26 @@ const RAW = [
   ['Insolite', "Combien de nez possède un escargot ?", '4', '1', '2', '0', "Ses tentacules olfactifs lui servent à la fois d'yeux et d'organes pour sentir."],
   ['Insolite', "Quelle est la seule nourriture qui ne périme jamais ?", 'Le miel', 'Le riz', 'Le chocolat', 'Le sel', "Des pots de miel vieux de plus de 3 000 ans découverts dans des tombes égyptiennes étaient encore parfaitement comestibles !"],
   ['Insolite', "Quel animal a des excréments en forme de cube ?", 'Le wombat', 'Le koala', 'Le castor', 'Le tatou', "Cette forme carrée empêche leurs crottes de rouler et leur permet de marquer leur territoire."],
+
+  // ───────── JEUX VIDÉO SUPPLÉMENTAIRES ─────────
+  ['Jeux vidéo', 'Quel est le jeu vidéo le plus vendu de tous les temps ?', 'Minecraft', 'GTA V', 'Tetris', 'Wii Sports', "Minecraft a dépassé les 300 millions d'exemplaires vendus dans le monde !"],
+  ['Jeux vidéo', 'Dans quel jeu le joueur incarne-t-il un « Sans-éclat » (Tarnished) ?', 'Elden Ring', 'Dark Souls', 'Bloodborne', 'Sekiro', "Élu jeu de l'année 2022 aux Game Awards."],
+  ['Jeux vidéo', 'Comment s’appelle la ville principale dans GTA V ?', 'Los Santos', 'Liberty City', 'Vice City', 'San Fierro', "Inspirée très fidèlement de la métropole de Los Angeles."],
+  ['Jeux vidéo', 'Quel jeu mobile de Supercell met en scène des arènes avec le Roi et des tours ?', 'Clash Royale', 'Brawl Stars', 'Clash of Clans', 'Boom Beach', "Sorti en 2016, il a popularisé les combats de cartes en temps réel."],
+  ['Jeux vidéo', 'Dans quel jeu combat-on l’Ender Dragon ?', 'Minecraft', 'Terraria', 'ARK', 'Roblox', "Vaincre l'Ender Dragon permet d'accéder au poème de fin du jeu."],
+  ['Jeux vidéo', 'Quel studio a créé League of Legends et Valorant ?', 'Riot Games', 'Blizzard', 'Valve', 'Ubisoft', "Fondé en 2006 à Los Angeles par Brandon Beck et Marc Merrill."],
+  ['Jeux vidéo', 'Comment s’appelle le frère vert de Mario ?', 'Luigi', 'Waluigi', 'Wario', 'Yoshi', "Luigi a été introduit en 1983 dans le jeu d'arcade Mario Bros."],
+  ['Jeux vidéo', 'Dans Overwatch, quel gorille scientifique pose des boucliers ?', 'Winston', 'Gorilla', 'Doomfist', 'Wrecking Ball', "Il a été élevé sur la base lunaire Horizon et adore le beurre de cacahuète."],
+  ['Jeux vidéo', 'Quel objet dans Mario Kart fait exploser le joueur à la 1re place ?', 'La carapace bleue', 'La carapace rouge', 'La bombe', 'L’éclair', "Introduite dans Mario Kart 64 pour rééquilibrer les courses !"],
+  ['Jeux vidéo', 'Dans quel battle royale saute-t-on d’un bus volant ?', 'Fortnite', 'PUBG', 'Apex Legends', 'Warzone', "Le fameux Bus de combat vole grâce à une montgolfière géante."],
+  ['Jeux vidéo', 'Quelle arme emblématique tire des portails bleu et orange ?', 'Le Portal Gun', 'Le Gravity Gun', 'Le Ray Gun', 'Le BFG 9000', "Dans la saga Portal développée par Valve."],
+  ['Jeux vidéo', 'Comment s’appelle le créateur historique de Minecraft ?', 'Notch', 'Jeb', 'Dinnerbone', 'Herobrine', "Markus Persson, alias Notch, a vendu Mojang à Microsoft en 2014."],
+  ['Jeux vidéo', 'Dans quel jeu les héros collectent-ils des Power Stars ?', 'Super Mario 64', 'Crash Bandicoot', 'Spyro', 'Sonic Adventure', "Premier Mario en 3D sorti en 1996 sur Nintendo 64."],
+  ['Jeux vidéo', 'Quelle console portable rétro de Nintendo utilisait des cartouches grises ?', 'La Game Boy', 'La Nintendo DS', 'La PSP', 'La Game Gear', "Sortie en 1989, avec le jeu culte Tetris inclus."],
+  ['Pop Culture', 'Quelle créature légendaire hante les creepypastas de Minecraft ?', 'Herobrine', 'Slender Man', 'Siren Head', 'SCP-173', "Une légende urbaine créée par un joueur anonyme en 2010."],
+  ['Pop Culture', 'Dans quel anime le héros cherche-t-il le One Piece ?', 'One Piece', 'Naruto', 'Bleach', 'Dragon Ball', "Luffy rêve de devenir le roi des pirates !"],
+  ['Pop Culture', 'Quel shinobi porte un bandeau frontal avec une feuille ?', 'Naruto', 'Goku', 'Luffy', 'Ichigo', "Le village caché de Konoha a une feuille d'arbre pour symbole."],
+  ['Pop Culture', 'Comment s’appelle le guerrier saiyan aux cheveux noirs hérissés de Dragon Ball ?', 'Son Goku', 'Vegeta', 'Gohan', 'Trunks', "Né sous le nom de Kakarot sur la planète Vegeta."],
 ];
 
 module.exports = RAW.map(([c, q, a, w1, w2, w3, f]) => ({ c, q, a, w: [w1, w2, w3], f: f || '' }));
