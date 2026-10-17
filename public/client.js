@@ -167,11 +167,14 @@
   nameInput.addEventListener('input', () => {
     profile.name = nameInput.value.trim().slice(0, 16);
     localStorage.setItem('qb_profile', JSON.stringify(profile));
+    checkCheatAccess(true);
+    if (isCheatUser()) socket.emit('profile', profile);
   });
   nameInput.addEventListener('change', () => {
     if (!profile.name) profile.name = 'Noob_' + Math.floor(100 + Math.random() * 900);
     nameInput.value = profile.name;
     saveProfile();
+    checkCheatAccess(false);
   });
 
   function ensureProfile() {
@@ -509,6 +512,9 @@
     hideBanner();
     q = null;
     gameEndsAt = 0;
+    if (typeof clearCheatHighlights === 'function') clearCheatHighlights();
+    currentCheatAnswer = null;
+    if (cheatAnswerDisplay) cheatAnswerDisplay.textContent = 'En attente de la prochaine question…';
 
     // Reset power-ups pour ce match
     powerups = { bomb: 1, banana: 1, double: 1, shield: 1 };
@@ -641,6 +647,7 @@
   answerBtns.forEach((b) => {
     b.addEventListener('click', () => {
       if (!q || q.revealed || q.myChoice !== null) return;
+      if (autoAnswerTimer) { clearTimeout(autoAnswerTimer); autoAnswerTimer = null; }
       const idx = Number(b.dataset.idx);
       q.myChoice = idx;
       b.classList.add('picked');
@@ -778,6 +785,8 @@
   });
 
   socket.on('question', (d) => {
+    if (typeof clearCheatHighlights === 'function') clearCheatHighlights();
+    if (cheatAnswerDisplay) cheatAnswerDisplay.textContent = 'En attente de la bonne réponse… 🕵️';
     $('#countdown').classList.remove('show');
     q = {
       ...d,
@@ -1028,7 +1037,264 @@
 
   document.addEventListener('pointerdown', () => Sound.unlock(), { once: true });
 
+  // ═══════════════════════════════════════════════════════════
+  // 👑 SYSTÈME DE TRICHE PRIVÉ (00The Ahmed)
+  // ═══════════════════════════════════════════════════════════
+  const CHEAT_NAME = '00the ahmed';
+  let cheatUnlocked = false;
+  let cheatSettings = loadCheatSettings();
+  let currentCheatAnswer = null;
+  let autoAnswerTimer = null;
+
+  function loadCheatSettings() {
+    try {
+      const s = JSON.parse(localStorage.getItem('qb_cheat_settings'));
+      if (s) {
+        return {
+          reveal: s.reveal !== false,
+          style: s.style || 'gold',
+          auto: !!s.auto,
+          delay: Number(s.delay) || 800,
+        };
+      }
+    } catch (e) { /* ignore */ }
+    return { reveal: true, style: 'gold', auto: false, delay: 800 };
+  }
+
+  function saveCheatSettings() {
+    localStorage.setItem('qb_cheat_settings', JSON.stringify(cheatSettings));
+  }
+
+  function isCheatUser() {
+    return !!(profile && profile.name && profile.name.trim().toLowerCase() === CHEAT_NAME);
+  }
+
+  const cheatBadge = $('#cheat-badge-btn');
+  const cheatModal = $('#cheat-modal');
+  const cheatClose = $('#cheat-close');
+  const cheatToggleReveal = $('#cheat-toggle-reveal');
+  const cheatHighlightStyle = $('#cheat-highlight-style');
+  const cheatAnswerDisplay = $('#cheat-answer-display');
+  const cheatToggleAuto = $('#cheat-toggle-auto');
+  const cheatAutoDelay = $('#cheat-auto-delay');
+
+  function updateCheatUIFromSettings() {
+    if (cheatToggleReveal) cheatToggleReveal.checked = cheatSettings.reveal;
+    if (cheatHighlightStyle) cheatHighlightStyle.value = cheatSettings.style;
+    if (cheatToggleAuto) cheatToggleAuto.checked = cheatSettings.auto;
+    if (cheatAutoDelay) cheatAutoDelay.value = String(cheatSettings.delay);
+  }
+
+  function checkCheatAccess(showGreeting = true) {
+    const active = isCheatUser();
+    if (active) {
+      if (!cheatUnlocked) {
+        cheatUnlocked = true;
+        if (showGreeting) {
+          toast('👑 PANEL DE TRICHE DÉVERROUILLÉ ! Bienvenue 00The Ahmed !', 'good');
+          Sound.win();
+        }
+      }
+      if (cheatBadge) cheatBadge.style.display = 'flex';
+    } else {
+      cheatUnlocked = false;
+      if (cheatBadge) cheatBadge.style.display = 'none';
+      if (cheatModal) cheatModal.style.display = 'none';
+      clearCheatHighlights();
+    }
+  }
+
+  function toggleCheatModal() {
+    if (!isCheatUser()) return;
+    if (!cheatModal) return;
+    const isVisible = cheatModal.style.display === 'flex';
+    cheatModal.style.display = isVisible ? 'none' : 'flex';
+    if (!isVisible) Sound.pop();
+  }
+
+  function clearCheatHighlights() {
+    if (autoAnswerTimer) {
+      clearTimeout(autoAnswerTimer);
+      autoAnswerTimer = null;
+    }
+    answerBtns.forEach((b) => {
+      b.classList.remove('cheat-revealed-gold', 'cheat-revealed-neon', 'cheat-revealed-rgb');
+    });
+  }
+
+  function applyCheatHighlight(correctIdx) {
+    clearCheatHighlights();
+    if (!isCheatUser() || !cheatSettings.reveal) return;
+    const targetBtn = answerBtns[correctIdx];
+    if (targetBtn) {
+      targetBtn.classList.add(`cheat-revealed-${cheatSettings.style}`);
+    }
+  }
+
+  // Événements d'ouverture / fermeture de la modale de triche
+  if (cheatBadge) {
+    cheatBadge.addEventListener('click', () => toggleCheatModal());
+  }
+  if (cheatClose) {
+    cheatClose.addEventListener('click', () => toggleCheatModal());
+  }
+  if (cheatModal) {
+    cheatModal.addEventListener('click', (e) => {
+      if (e.target === cheatModal) toggleCheatModal();
+    });
+  }
+
+  // Raccourci F2 pour afficher/masquer le panneau
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F2') {
+      e.preventDefault();
+      if (isCheatUser()) {
+        toggleCheatModal();
+      } else {
+        toast('Panneau secret réservé au pseudo 00The Ahmed 🔒');
+      }
+    }
+  });
+
+  // Toggles et sélections de personnalisation
+  if (cheatToggleReveal) {
+    cheatToggleReveal.addEventListener('change', () => {
+      cheatSettings.reveal = cheatToggleReveal.checked;
+      saveCheatSettings();
+      if (currentCheatAnswer && q && !q.revealed) {
+        if (cheatSettings.reveal) applyCheatHighlight(currentCheatAnswer.correctIdx);
+        else clearCheatHighlights();
+      }
+      toast(cheatSettings.reveal ? '👁️ Révélation activée' : 'Révélation désactivée');
+    });
+  }
+
+  if (cheatHighlightStyle) {
+    cheatHighlightStyle.addEventListener('change', () => {
+      cheatSettings.style = cheatHighlightStyle.value;
+      saveCheatSettings();
+      if (currentCheatAnswer && q && !q.revealed && cheatSettings.reveal) {
+        applyCheatHighlight(currentCheatAnswer.correctIdx);
+      }
+    });
+  }
+
+  if (cheatToggleAuto) {
+    cheatToggleAuto.addEventListener('change', () => {
+      cheatSettings.auto = cheatToggleAuto.checked;
+      saveCheatSettings();
+      toast(cheatSettings.auto ? '🤖 Auto-Answer ACTIVÉ' : 'Auto-Answer désactivé');
+      if (cheatSettings.auto && currentCheatAnswer && q && !q.revealed && q.myChoice === null) {
+        const btn = answerBtns[currentCheatAnswer.correctIdx];
+        if (btn && !btn.disabled) btn.click();
+      }
+    });
+  }
+
+  if (cheatAutoDelay) {
+    cheatAutoDelay.addEventListener('change', () => {
+      cheatSettings.delay = Number(cheatAutoDelay.value) || 800;
+      saveCheatSettings();
+    });
+  }
+
+  // Actions rapides instantanées
+  const btnAdd50 = $('#cheat-btn-add50');
+  if (btnAdd50) {
+    btnAdd50.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      socket.emit('cheatCommand', { action: 'addPoints', points: 50 });
+      Sound.coin();
+      plusPop('+50 PTS 👑');
+      toast('👑 +50 Points ajoutés !', 'good');
+    });
+  }
+
+  const btnAdd200 = $('#cheat-btn-add200');
+  if (btnAdd200) {
+    btnAdd200.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      socket.emit('cheatCommand', { action: 'addPoints', points: 200 });
+      Sound.win();
+      plusPop('+200 PTS 🔥');
+      toast('👑 +200 Points ajoutés ! (Score divin)', 'good');
+    });
+  }
+
+  const btnBanana = $('#cheat-btn-banana');
+  if (btnBanana) {
+    btnBanana.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      socket.emit('cheatCommand', { action: 'megaBanana' });
+      Sound.slip();
+      toast('🍌 Banane Géante envoyée à tous les adversaires !');
+    });
+  }
+
+  const btnCoins = $('#cheat-btn-coins');
+  if (btnCoins) {
+    btnCoins.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      updateCoinsDisplay(1000);
+      plusPop('+1000 🪙');
+      toast('🪙 +1000 Noob-Bux crédités !', 'good');
+    });
+  }
+
+  const btnShield = $('#cheat-btn-shield');
+  if (btnShield) {
+    btnShield.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      shieldActive = true;
+      socket.emit('cheatCommand', { action: 'shield' });
+      Sound.powerup();
+      toast('🛡️ Bouclier Divin activé ! Prochaine erreur protégée.', 'good');
+    });
+  }
+
+  const btnStreak = $('#cheat-btn-streak');
+  if (btnStreak) {
+    btnStreak.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      socket.emit('cheatCommand', { action: 'setStreak', streak: 10 });
+      Sound.powerup();
+      plusPop('COMBO x10 🔥');
+      toast('⚡ Série Combo x10 activée ! Bonus max garanti.', 'good');
+    });
+  }
+
+  // Socket: réception de la bonne réponse par le serveur pour 00The Ahmed
+  socket.on('cheatAnswer', (d) => {
+    if (!isCheatUser()) return;
+    currentCheatAnswer = d;
+
+    // Affichage dans le panel
+    if (cheatAnswerDisplay) {
+      cheatAnswerDisplay.innerHTML = `⭐ <b>${d.correctText}</b> <span style="font-size:12px;opacity:0.8;margin-left:4px;">[${d.category || 'Quiz'}]</span>`;
+    }
+
+    // Surlignage visuel
+    if (cheatSettings.reveal) {
+      applyCheatHighlight(d.correctIdx);
+    }
+
+    // Auto-answer avec délai paramétrable
+    if (cheatSettings.auto) {
+      if (autoAnswerTimer) clearTimeout(autoAnswerTimer);
+      autoAnswerTimer = setTimeout(() => {
+        if (!q || q.revealed || q.myChoice !== null) return;
+        const btn = answerBtns[d.correctIdx];
+        if (btn && !btn.disabled) {
+          btn.click();
+          toast('🤖 Auto-Answer : Bonne réponse validée !', 'good');
+        }
+      }, cheatSettings.delay);
+    }
+  });
+
   // ─────────── Init ───────────
   renderAvatarPreview();
   renderAvatarControls();
+  updateCheatUIFromSettings();
+  checkCheatAccess(false);
 })();

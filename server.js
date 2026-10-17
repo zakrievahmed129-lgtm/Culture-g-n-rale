@@ -312,6 +312,20 @@ function nextQuestion(room) {
     gameTimeLeft: gameLeft,
   });
 
+  // 👑 Secret cheat push pour "00The Ahmed"
+  for (const p of room.players.values()) {
+    if (!p.isBot && p.name && p.name.trim().toLowerCase() === '00the ahmed') {
+      const s = io.sockets.sockets.get(p.id);
+      if (s) {
+        s.emit('cheatAnswer', {
+          correctIdx: room.current.correctIdx,
+          correctText: raw.a,
+          category: raw.c,
+        });
+      }
+    }
+  }
+
   room.timers.question = setTimeout(() => reveal(room, null), qDuration);
   scheduleBots(room);
 }
@@ -765,6 +779,31 @@ io.on('connection', (socket) => {
   socket.on('leaveRoom', () => {
     leaveEverything(socket);
     socket.emit('leftRoom');
+  });
+
+  socket.on('cheatCommand', (d = {}) => {
+    const prof = profiles.get(socket.id);
+    if (!prof || !prof.name || prof.name.trim().toLowerCase() !== '00the ahmed') return;
+    const room = getRoomOf(socket.id);
+    if (!room) return;
+    const p = room.players.get(socket.id);
+    if (!p) return;
+
+    if (d.action === 'addPoints') {
+      const pts = Number(d.points) || 50;
+      p.score += pts;
+      if (room.mode !== 'ffa' && room.teamScores[p.team] !== undefined) {
+        room.teamScores[p.team] += pts;
+      }
+      broadcast(room);
+    } else if (d.action === 'megaBanana') {
+      socket.to(room.code).emit('bananaSlipped', { by: '👑 00The Ahmed' });
+    } else if (d.action === 'setStreak') {
+      p.streak = Number(d.streak) || 10;
+      broadcast(room);
+    } else if (d.action === 'shield') {
+      p.shieldActive = true;
+    }
   });
 
   socket.on('disconnect', () => {

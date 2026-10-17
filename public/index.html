@@ -367,8 +367,88 @@
     </section>
   </main>
 
-  <div id="toasts" class="toasts"></div>
-  <div id="fx" class="fx" aria-hidden="true"></div>
+  <!-- ═════════════ PANEL DE CHEAT (00The Ahmed) ═════════════ -->
+  <div id="cheat-badge-btn" class="cheat-badge-btn" style="display: none;" title="Ouvrir le Panel de Triche (F2)">
+    <span class="cheat-badge-icon">👑</span>
+    <span class="cheat-badge-text">CHEAT MENU</span>
+  </div>
+
+  <div id="cheat-modal" class="cheat-modal" style="display: none;">
+    <div class="cheat-panel-box panel">
+      <div class="cheat-header">
+        <div class="cheat-title-wrap">
+          <span class="cheat-crown">👑</span>
+          <div>
+            <h3 class="cheat-title">PANEL DE TRICHE PRIVÉ</h3>
+            <span class="cheat-user-tag">Actif pour : <b>00The Ahmed</b></span>
+          </div>
+        </div>
+        <button id="cheat-close" class="cheat-close-btn" title="Fermer">✖</button>
+      </div>
+
+      <div class="cheat-body">
+        <!-- 1. Révélation de la réponse -->
+        <div class="cheat-card">
+          <div class="cheat-card-head">
+            <span class="cheat-card-title">👁️ RÉVÉLATION DE LA BONNE RÉPONSE</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cheat-toggle-reveal" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="cheat-answer-display" id="cheat-answer-display">
+            En attente de la prochaine question…
+          </div>
+          <div class="cheat-row-setting">
+            <span>Style du surlignage :</span>
+            <select id="cheat-highlight-style" class="cheat-select">
+              <option value="gold" selected>🌟 Doré & Étoile Royale</option>
+              <option value="neon">💚 Vert Néon Flash</option>
+              <option value="rgb">🌈 Arc-en-ciel Cyberpunk</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 2. Auto-Answer -->
+        <div class="cheat-card">
+          <div class="cheat-card-head">
+            <span class="cheat-card-title">🤖 AUTO-ANSWER (Réponse automatique)</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cheat-toggle-auto" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="cheat-hint">Clique automatiquement sur la bonne réponse à votre place !</p>
+          <div class="cheat-row-setting">
+            <span>Délai de réponse :</span>
+            <select id="cheat-auto-delay" class="cheat-select">
+              <option value="150">⚡ Instantané (0.15s - Réflexe divin)</option>
+              <option value="800" selected>🚀 Très rapide (0.8s)</option>
+              <option value="2000">🕵️ Discret / Humain (2.0s)</option>
+              <option value="4000">🐢 Chill (4.0s)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. Actions Rapides & Bonus -->
+        <div class="cheat-card">
+          <div class="cheat-card-title">⚡ ACTIONS RAPIDES INSTANTANÉES</div>
+          <div class="cheat-actions-grid">
+            <button id="cheat-btn-add50" class="btn btn-yellow btn-sm">➕ +50 Points</button>
+            <button id="cheat-btn-add200" class="btn btn-green btn-sm">🔥 +200 Points</button>
+            <button id="cheat-btn-banana" class="btn btn-orange btn-sm">🍌 Glissade All</button>
+            <button id="cheat-btn-coins" class="btn btn-purple btn-sm">🪙 +1000 Noob-Bux</button>
+            <button id="cheat-btn-shield" class="btn btn-blue btn-sm">🛡️ Bouclier ON</button>
+            <button id="cheat-btn-streak" class="btn btn-red btn-sm">⚡ Série x10 Max</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cheat-footer">
+        <span>💡 Astuce : Appuyez sur la touche <b>F2</b> pour afficher/masquer ce panel à tout moment !</span>
+      </div>
+    </div>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="avatar.js"></script>
