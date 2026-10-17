@@ -1449,17 +1449,87 @@ input:checked + .toggle-slider:before {
   transform: translateX(20px);
 }
 
-/* ─────────── Effets Visuels sur les Réponses Triche ─────────── */
-/* 1. Style Doré */
+/* ─────────── Bouton Rapide HUD Triche (En Partie) ─────────── */
+.powerup-btn.cheat-hud-btn {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border: 3px solid #1b1b1b;
+  color: #1b1b1b;
+  font-weight: 800;
+  box-shadow: 0 4px 0 #1b1b1b, 0 0 16px rgba(255, 215, 0, 0.7);
+  animation: hudBtnPulse 1.6s infinite alternate;
+}
+.powerup-btn.cheat-hud-btn.off {
+  background: #363a4f;
+  color: #a6adc8;
+  border-color: #1b1b1b;
+  box-shadow: 0 4px 0 #1b1b1b;
+  animation: none;
+}
+.powerup-btn.cheat-hud-btn:hover {
+  transform: translateY(-3px) scale(1.06);
+}
+@keyframes hudBtnPulse {
+  0% { box-shadow: 0 4px 0 #1b1b1b, 0 0 8px rgba(255, 215, 0, 0.4); }
+  100% { box-shadow: 0 4px 0 #1b1b1b, 0 0 24px rgba(255, 140, 0, 0.95); }
+}
+
+/* ─────────── Effets Visuels sur les Réponses Triche (CLIGNOTEMENT) ─────────── */
+
+:root {
+  --cheat-blink-speed: 0.42s;
+}
+
+/* 1. Style Clignotement Flash Strobe (Par défaut) */
+.answer.cheat-revealed-blink {
+  animation: cheatBlinkFlash var(--cheat-blink-speed, 0.42s) infinite alternate cubic-bezier(0.4, 0, 0.2, 1) !important;
+  z-index: 10 !important;
+  transform-origin: center center;
+}
+.answer.cheat-revealed-blink::before {
+  content: "⚡ BONNE RÉPONSE ⚡";
+  position: absolute;
+  top: -14px;
+  left: 12px;
+  background: #ffeb3b;
+  color: #000;
+  font-family: var(--font-title);
+  font-size: 11.5px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 2.5px solid #000;
+  box-shadow: 0 3px 0 #000;
+  letter-spacing: 0.8px;
+  animation: cheatBadgeBlink var(--cheat-blink-speed, 0.42s) infinite alternate !important;
+}
+
+@keyframes cheatBlinkFlash {
+  0% {
+    filter: brightness(1.5) drop-shadow(0 0 24px #ffea00);
+    transform: scale(1.05);
+    border-color: #ffffff !important;
+    box-shadow: 0 0 35px #ffea00, inset 0 0 25px rgba(255, 255, 255, 0.9), 0 6px 0 var(--ink) !important;
+  }
+  100% {
+    filter: brightness(0.8);
+    transform: scale(0.99);
+    border-color: #ff9800 !important;
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.3), inset 0 0 4px rgba(255, 152, 0, 0.2), 0 2px 0 var(--ink) !important;
+  }
+}
+
+@keyframes cheatBadgeBlink {
+  0% { transform: scale(1.08); background: #ffeb3b; color: #000; }
+  100% { transform: scale(0.96); background: #ff1744; color: #fff; }
+}
+
+/* 2. Style Doré Clignotant */
 .answer.cheat-revealed-gold {
-  box-shadow: 0 0 25px #ffd700, inset 0 0 15px rgba(255, 215, 0, 0.6), 0 5px 0 var(--ink) !important;
-  border-color: #ffd700 !important;
-  animation: cheatGoldPulse 1s infinite alternate !important;
-  transform: scale(1.03) !important;
+  animation: cheatGoldBlink var(--cheat-blink-speed, 0.48s) infinite alternate cubic-bezier(0.4, 0, 0.2, 1) !important;
   z-index: 10 !important;
 }
 .answer.cheat-revealed-gold::before {
-  content: "⭐ BONNE RÉPONSE";
+  content: "⭐ BONNE RÉPONSE ⭐";
   position: absolute;
   top: -12px;
   left: 14px;
@@ -1473,21 +1543,28 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 2px 0 #000;
   letter-spacing: 0.5px;
 }
-@keyframes cheatGoldPulse {
-  from { filter: brightness(1.05); }
-  to { filter: brightness(1.3); }
+@keyframes cheatGoldBlink {
+  0% {
+    filter: brightness(1.45) drop-shadow(0 0 20px #ffd700);
+    transform: scale(1.04);
+    border-color: #ffffff !important;
+    box-shadow: 0 0 32px #ffd700, inset 0 0 18px rgba(255, 215, 0, 0.8), 0 6px 0 var(--ink) !important;
+  }
+  100% {
+    filter: brightness(0.78);
+    transform: scale(0.99);
+    border-color: #b8860b !important;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.2), inset 0 0 2px rgba(255, 215, 0, 0.1), 0 2px 0 var(--ink) !important;
+  }
 }
 
-/* 2. Style Néon */
+/* 3. Style Néon Clignotant */
 .answer.cheat-revealed-neon {
-  box-shadow: 0 0 25px #00e676, inset 0 0 15px rgba(0, 230, 118, 0.6), 0 5px 0 var(--ink) !important;
-  border-color: #00e676 !important;
-  animation: cheatNeonPulse 0.8s infinite alternate !important;
-  transform: scale(1.03) !important;
+  animation: cheatNeonBlink var(--cheat-blink-speed, 0.42s) infinite alternate cubic-bezier(0.4, 0, 0.2, 1) !important;
   z-index: 10 !important;
 }
 .answer.cheat-revealed-neon::before {
-  content: "⚡ VRAIE RÉPONSE";
+  content: "⚡ VRAIE RÉPONSE ⚡";
   position: absolute;
   top: -12px;
   left: 14px;
@@ -1500,20 +1577,28 @@ input:checked + .toggle-slider:before {
   border: 2px solid #1b1b1b;
   box-shadow: 0 2px 0 #000;
 }
-@keyframes cheatNeonPulse {
-  from { filter: drop-shadow(0 0 8px #00e676); }
-  to { filter: drop-shadow(0 0 22px #00e676); }
+@keyframes cheatNeonBlink {
+  0% {
+    filter: brightness(1.45) drop-shadow(0 0 25px #00e676);
+    transform: scale(1.04);
+    border-color: #ffffff !important;
+    box-shadow: 0 0 35px #00e676, inset 0 0 20px rgba(0, 230, 118, 0.8), 0 6px 0 var(--ink) !important;
+  }
+  100% {
+    filter: brightness(0.72);
+    transform: scale(0.99);
+    border-color: #00796b !important;
+    box-shadow: 0 0 6px rgba(0, 230, 118, 0.2), inset 0 0 3px rgba(0, 230, 118, 0.1), 0 2px 0 var(--ink) !important;
+  }
 }
 
-/* 3. Style RGB */
+/* 4. Style RGB Clignotant */
 .answer.cheat-revealed-rgb {
-  box-shadow: 0 0 25px #ff007f, inset 0 0 15px rgba(255, 0, 127, 0.6), 0 5px 0 var(--ink) !important;
-  animation: cheatRgbPulse 1.2s infinite linear !important;
-  transform: scale(1.03) !important;
+  animation: cheatRgbBlink var(--cheat-blink-speed, 0.5s) infinite alternate cubic-bezier(0.4, 0, 0.2, 1) !important;
   z-index: 10 !important;
 }
 .answer.cheat-revealed-rgb::before {
-  content: "🌈 00The Ahmed HACK";
+  content: "🌈 00The Ahmed HACK 🌈";
   position: absolute;
   top: -12px;
   left: 14px;
@@ -1526,10 +1611,22 @@ input:checked + .toggle-slider:before {
   border: 2px solid #1b1b1b;
   box-shadow: 0 2px 0 #000;
 }
-@keyframes cheatRgbPulse {
-  0% { border-color: #ff0055; box-shadow: 0 0 25px #ff0055; }
-  33% { border-color: #00e676; box-shadow: 0 0 25px #00e676; }
-  66% { border-color: #00f2fe; box-shadow: 0 0 25px #00f2fe; }
-  100% { border-color: #ff0055; box-shadow: 0 0 25px #ff0055; }
+@keyframes cheatRgbBlink {
+  0% {
+    filter: brightness(1.5) drop-shadow(0 0 25px #00f2fe);
+    transform: scale(1.04);
+    border-color: #ffffff !important;
+    box-shadow: 0 0 35px #00f2fe, inset 0 0 20px rgba(0, 242, 254, 0.7), 0 6px 0 var(--ink) !important;
+  }
+  50% {
+    border-color: #ff0055 !important;
+    box-shadow: 0 0 35px #ff0055, inset 0 0 20px rgba(255, 0, 85, 0.7), 0 4px 0 var(--ink) !important;
+  }
+  100% {
+    filter: brightness(0.72);
+    transform: scale(0.99);
+    border-color: #7a00ff !important;
+    box-shadow: 0 0 6px rgba(122, 0, 255, 0.3), inset 0 0 3px rgba(122, 0, 255, 0.1), 0 2px 0 var(--ink) !important;
+  }
 }
 

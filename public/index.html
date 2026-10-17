@@ -312,6 +312,10 @@
             <span class="pw-name">Bouclier</span>
             <span class="pw-badge" id="pw-count-shield">1</span>
           </button>
+          <button id="pw-cheat-reveal" class="powerup-btn cheat-hud-btn" style="display: none;" title="Activer / Désactiver le clignotement de la bonne réponse (Touche R)">
+            <span class="pw-icon">👑👁️</span>
+            <span class="pw-name">Bonne Réponse : <b id="pw-cheat-state">OUI</b></span>
+          </button>
         </div>
       </div>
 
@@ -387,10 +391,10 @@
       </div>
 
       <div class="cheat-body">
-        <!-- 1. Révélation de la réponse -->
+        <!-- 1. Révélation de la réponse avec clignotement -->
         <div class="cheat-card">
           <div class="cheat-card-head">
-            <span class="cheat-card-title">👁️ RÉVÉLATION DE LA BONNE RÉPONSE</span>
+            <span class="cheat-card-title">👁️ RÉVÉLATION & CLIGNOTEMENT (Touche R)</span>
             <label class="toggle-switch">
               <input type="checkbox" id="cheat-toggle-reveal" checked />
               <span class="toggle-slider"></span>
@@ -400,11 +404,20 @@
             En attente de la prochaine question…
           </div>
           <div class="cheat-row-setting">
-            <span>Style du surlignage :</span>
+            <span>Style de clignotement :</span>
             <select id="cheat-highlight-style" class="cheat-select">
-              <option value="gold" selected>🌟 Doré & Étoile Royale</option>
-              <option value="neon">💚 Vert Néon Flash</option>
-              <option value="rgb">🌈 Arc-en-ciel Cyberpunk</option>
+              <option value="blink" selected>⚡ Clignotement Flash Strobe (Ultra voyant)</option>
+              <option value="gold">🌟 Clignotement Doré & Étoile Royale</option>
+              <option value="neon">💚 Clignotement Vert Néon Flash</option>
+              <option value="rgb">🌈 Clignotement Arc-en-ciel Cyberpunk</option>
+            </select>
+          </div>
+          <div class="cheat-row-setting">
+            <span>Vitesse de clignotement :</span>
+            <select id="cheat-blink-speed" class="cheat-select">
+              <option value="fast" selected>⚡ Rapide (0.35s - Clignote vif)</option>
+              <option value="normal">✨ Normal (0.55s)</option>
+              <option value="slow">🐢 Lent (0.9s)</option>
             </select>
           </div>
         </div>

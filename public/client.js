@@ -530,6 +530,12 @@
       if (badge) badge.textContent = powerups[k];
       if (btn) btn.disabled = powerups[k] <= 0;
     }
+    const pwCheat = $('#pw-cheat-reveal');
+    if (pwCheat) {
+      const active = (typeof isCheatUser === 'function') && isCheatUser();
+      pwCheat.style.display = active ? 'flex' : 'none';
+      if (typeof updateCheatUIFromSettings === 'function') updateCheatUIFromSettings();
+    }
   }
 
   // Clics sur les Power-ups
@@ -1052,13 +1058,14 @@
       if (s) {
         return {
           reveal: s.reveal !== false,
-          style: s.style || 'gold',
+          style: s.style || 'blink',
+          speed: s.speed || 'fast',
           auto: !!s.auto,
           delay: Number(s.delay) || 800,
         };
       }
     } catch (e) { /* ignore */ }
-    return { reveal: true, style: 'gold', auto: false, delay: 800 };
+    return { reveal: true, style: 'blink', speed: 'fast', auto: false, delay: 800 };
   }
 
   function saveCheatSettings() {
@@ -1074,15 +1081,50 @@
   const cheatClose = $('#cheat-close');
   const cheatToggleReveal = $('#cheat-toggle-reveal');
   const cheatHighlightStyle = $('#cheat-highlight-style');
+  const cheatBlinkSpeed = $('#cheat-blink-speed');
   const cheatAnswerDisplay = $('#cheat-answer-display');
   const cheatToggleAuto = $('#cheat-toggle-auto');
   const cheatAutoDelay = $('#cheat-auto-delay');
+  const pwCheatReveal = $('#pw-cheat-reveal');
+  const pwCheatState = $('#pw-cheat-state');
+
+  function applyBlinkSpeed(spd) {
+    const dur = spd === 'slow' ? '0.9s' : spd === 'normal' ? '0.55s' : '0.35s';
+    document.documentElement.style.setProperty('--cheat-blink-speed', dur);
+  }
 
   function updateCheatUIFromSettings() {
     if (cheatToggleReveal) cheatToggleReveal.checked = cheatSettings.reveal;
-    if (cheatHighlightStyle) cheatHighlightStyle.value = cheatSettings.style;
+    if (cheatHighlightStyle) cheatHighlightStyle.value = cheatSettings.style || 'blink';
+    if (cheatBlinkSpeed) cheatBlinkSpeed.value = cheatSettings.speed || 'fast';
     if (cheatToggleAuto) cheatToggleAuto.checked = cheatSettings.auto;
     if (cheatAutoDelay) cheatAutoDelay.value = String(cheatSettings.delay);
+
+    if (pwCheatState) pwCheatState.textContent = cheatSettings.reveal ? 'OUI' : 'NON';
+    if (pwCheatReveal) pwCheatReveal.classList.toggle('off', !cheatSettings.reveal);
+    applyBlinkSpeed(cheatSettings.speed || 'fast');
+  }
+
+  function setRevealState(active) {
+    cheatSettings.reveal = !!active;
+    saveCheatSettings();
+    updateCheatUIFromSettings();
+
+    if (currentCheatAnswer && q && !q.revealed) {
+      if (cheatSettings.reveal) {
+        applyCheatHighlight(currentCheatAnswer.correctIdx);
+      } else {
+        clearCheatHighlights();
+      }
+    }
+
+    if (cheatSettings.reveal) {
+      toast('⚡ Clignotement de la bonne réponse ACTIVÉ ! (Touche R)', 'good');
+      Sound.coin();
+    } else {
+      toast('Clignotement de la bonne réponse désactivé (Touche R)');
+      Sound.click();
+    }
   }
 
   function checkCheatAccess(showGreeting = true) {
@@ -1096,12 +1138,15 @@
         }
       }
       if (cheatBadge) cheatBadge.style.display = 'flex';
+      if (pwCheatReveal) pwCheatReveal.style.display = 'flex';
     } else {
       cheatUnlocked = false;
       if (cheatBadge) cheatBadge.style.display = 'none';
       if (cheatModal) cheatModal.style.display = 'none';
+      if (pwCheatReveal) pwCheatReveal.style.display = 'none';
       clearCheatHighlights();
     }
+    updateCheatUIFromSettings();
   }
 
   function toggleCheatModal() {
@@ -1118,7 +1163,7 @@
       autoAnswerTimer = null;
     }
     answerBtns.forEach((b) => {
-      b.classList.remove('cheat-revealed-gold', 'cheat-revealed-neon', 'cheat-revealed-rgb');
+      b.classList.remove('cheat-revealed-blink', 'cheat-revealed-gold', 'cheat-revealed-neon', 'cheat-revealed-rgb');
     });
   }
 
@@ -1127,7 +1172,7 @@
     if (!isCheatUser() || !cheatSettings.reveal) return;
     const targetBtn = answerBtns[correctIdx];
     if (targetBtn) {
-      targetBtn.classList.add(`cheat-revealed-${cheatSettings.style}`);
+      targetBtn.classList.add(`cheat-revealed-${cheatSettings.style || 'blink'}`);
     }
   }
 
@@ -1144,7 +1189,7 @@
     });
   }
 
-  // Raccourci F2 pour afficher/masquer le panneau
+  // Raccourcis clavier (F2 pour menu cheat, R pour activer/désactiver le clignotement)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'F2') {
       e.preventDefault();
@@ -1153,19 +1198,25 @@
       } else {
         toast('Panneau secret réservé au pseudo 00The Ahmed 🔒');
       }
+    } else if ((e.key === 'r' || e.key === 'R') && document.activeElement.tagName !== 'INPUT') {
+      if (isCheatUser()) {
+        e.preventDefault();
+        setRevealState(!cheatSettings.reveal);
+      }
     }
   });
+
+  // Bouton direct dans la barre de power-ups
+  if (pwCheatReveal) {
+    pwCheatReveal.addEventListener('click', () => {
+      if (isCheatUser()) setRevealState(!cheatSettings.reveal);
+    });
+  }
 
   // Toggles et sélections de personnalisation
   if (cheatToggleReveal) {
     cheatToggleReveal.addEventListener('change', () => {
-      cheatSettings.reveal = cheatToggleReveal.checked;
-      saveCheatSettings();
-      if (currentCheatAnswer && q && !q.revealed) {
-        if (cheatSettings.reveal) applyCheatHighlight(currentCheatAnswer.correctIdx);
-        else clearCheatHighlights();
-      }
-      toast(cheatSettings.reveal ? '👁️ Révélation activée' : 'Révélation désactivée');
+      setRevealState(cheatToggleReveal.checked);
     });
   }
 
@@ -1176,6 +1227,15 @@
       if (currentCheatAnswer && q && !q.revealed && cheatSettings.reveal) {
         applyCheatHighlight(currentCheatAnswer.correctIdx);
       }
+    });
+  }
+
+  if (cheatBlinkSpeed) {
+    cheatBlinkSpeed.addEventListener('change', () => {
+      cheatSettings.speed = cheatBlinkSpeed.value;
+      saveCheatSettings();
+      applyBlinkSpeed(cheatSettings.speed);
+      toast(`⚡ Vitesse de clignotement : ${cheatSettings.speed}`);
     });
   }
 
