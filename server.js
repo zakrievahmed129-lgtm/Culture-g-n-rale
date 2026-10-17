@@ -36,7 +36,7 @@ const io = new Server(server);
 
 /** @type {Map<string, any>} */
 const rooms = new Map();
-const queues = { 'ffa': [], 1: [], 2: [], 3: [] };
+const queues = { 'ffa': [], '1': [], '2': [], '3': [] };
 const profiles = new Map();   // socketId -> { name, avatar }
 const socketRoom = new Map(); // socketId -> roomCode
 const lastEmote = new Map();  // socketId -> timestamp
@@ -508,54 +508,156 @@ function endGame(room, forfeitWinner = null) {
 }
 
 // ─────────────────────────── matchmaking ───────────────────────────
+const getQueueItemId = (item) => (typeof item === 'string' ? item : (item && item.id));
+const queueTimers = new Map(); // socketId -> timer
+
+function cleanQueues() {
+  for (const m of ['ffa', '1', '2', '3']) {
+    queues[m] = (queues[m] || []).filter((item) => {
+      const id = getQueueItemId(item);
+      return id && io.sockets.sockets.has(id);
+    });
+  }
+}
+
+function getAllWaitingPlayers() {
+  cleanQueues();
+  const all = [];
+  for (const m of ['ffa', '1', '2', '3']) {
+    for (const item of queues[m]) {
+      all.push({ ...item, currentQueueMode: m });
+    }
+  }
+  return all;
+}
+
 function emitQueue(mode) {
-  const qList = queues[mode] || [];
-  const needed = mode === 'ffa' ? 4 : mode * 2;
-  for (const id of qList) {
-    io.to(id).emit('queueStatus', { mode, count: qList.length, needed });
+  cleanQueues();
+  const totalSearching = getAllWaitingPlayers().length;
+  for (const m of ['ffa', '1', '2', '3']) {
+    const list = queues[m] || [];
+    for (const item of list) {
+      const id = getQueueItemId(item);
+      if (id) {
+        io.to(id).emit('queueStatus', {
+          mode: m,
+          count: list.length,
+          totalSearching,
+          needed: 2,
+        });
+      }
+    }
   }
 }
 
 function leaveQueue(socketId) {
-  for (const m of ['ffa', 1, 2, 3]) {
-    const i = (queues[m] || []).indexOf(socketId);
-    if (i >= 0) {
-      queues[m].splice(i, 1);
-      emitQueue(m);
+  if (queueTimers.has(socketId)) {
+    clearTimeout(queueTimers.get(socketId));
+    queueTimers.delete(socketId);
+  }
+  for (const m of ['ffa', '1', '2', '3']) {
+    const list = queues[m] || [];
+    const idx = list.findIndex((item) => getQueueItemId(item) === socketId);
+    if (idx >= 0) {
+      list.splice(idx, 1);
     }
+  }
+  emitQueue('ffa');
+}
+
+function launchMatchWithPlayers(matchedItems, mode) {
+  // Annule les timers d'attente bot pour ces joueurs
+  matchedItems.forEach((item) => {
+    const id = getQueueItemId(item);
+    if (queueTimers.has(id)) {
+      clearTimeout(queueTimers.get(id));
+      queueTimers.delete(id);
+    }
+  });
+
+  const chosenCat = matchedItems.find((x) => x && x.category && x.category !== 'all')?.category || 'all';
+  const actualMode = validMode(mode);
+  const room = createRoom(actualMode, false, { category: chosenCat });
+
+  if (actualMode === 'ffa') {
+    matchedItems.forEach((item) => {
+      const s = io.sockets.sockets.get(getQueueItemId(item));
+      if (s) addPlayer(room, s);
+    });
+    // Complète avec des bots pour avoir une arène remplie à 5 ou 6 joueurs
+    while (room.players.size < 6) addBot(room);
+  } else {
+    // Modes par équipes (1v1, 2v2, 3v3)
+    matchedItems.forEach((item, i) => {
+      const s = io.sockets.sockets.get(getQueueItemId(item));
+      if (s) addPlayer(room, s, i % 2 === 0 ? 'red' : 'blue');
+    });
+    // Complète les équipes avec des bots si besoin
+    while (teamCount(room, 'red') < actualMode) addBot(room, 'red');
+    while (teamCount(room, 'blue') < actualMode) addBot(room, 'blue');
+  }
+
+  if (humans(room).length > 0) {
+    startCountdown(room);
   }
 }
 
-function tryMatch(mode) {
-  if (mode === 'ffa') {
-    // FFA peut lancer dès qu'il y a au moins 3 joueurs ou 2 joueurs prêts
-    if (queues['ffa'].length >= 3) {
-      const ids = shuffle(queues['ffa'].splice(0, Math.min(8, queues['ffa'].length)));
-      const room = createRoom('ffa', false);
-      ids.forEach((id) => {
-        const s = io.sockets.sockets.get(id);
-        if (s) addPlayer(room, s);
-      });
-      // Ajoute 2 ou 3 bots pour encore plus d'ambiance
-      while (room.players.size < 6) addBot(room);
-      startCountdown(room);
-    }
-  } else {
-    while (queues[mode].length >= mode * 2) {
-      const ids = shuffle(queues[mode].splice(0, mode * 2));
-      const room = createRoom(mode, false);
-      ids.forEach((id, i) => {
-        const s = io.sockets.sockets.get(id);
-        if (s) addPlayer(room, s, i % 2 === 0 ? 'red' : 'blue');
-      });
-      if (teamCount(room, 'red') === 0 || teamCount(room, 'blue') === 0) {
-        while (teamCount(room, 'red') < mode) addBot(room, 'red');
-        while (teamCount(room, 'blue') < mode) addBot(room, 'blue');
+function scheduleBotFallback(socketId, mode, category) {
+  if (queueTimers.has(socketId)) clearTimeout(queueTimers.get(socketId));
+  const t = setTimeout(() => {
+    queueTimers.delete(socketId);
+    cleanQueues();
+    const s = io.sockets.sockets.get(socketId);
+    if (!s) return;
+
+    let foundItem = null;
+    for (const m of ['ffa', '1', '2', '3']) {
+      const idx = (queues[m] || []).findIndex((it) => getQueueItemId(it) === socketId);
+      if (idx >= 0) {
+        foundItem = queues[m].splice(idx, 1)[0];
+        break;
       }
-      startCountdown(room);
+    }
+    if (foundItem) {
+      launchMatchWithPlayers([foundItem], mode);
+      emitQueue(mode);
+    }
+  }, 8000); // 8 secondes d'attente max avant lancement avec bots
+  queueTimers.set(socketId, t);
+}
+
+function tryMatch(mode) {
+  cleanQueues();
+
+  // 1. Même mode : s'il y a 2+ joueurs dans le même mode, lancement immédiat
+  for (const m of ['ffa', '1', '2', '3']) {
+    const qList = queues[m] || [];
+    if (qList.length >= 2) {
+      const matchedItems = qList.splice(0, Math.min(8, qList.length));
+      launchMatchWithPlayers(matchedItems, m);
+      emitQueue(m);
+      return true;
     }
   }
+
+  // 2. Cross-mode fallback : si 2 joueurs ou plus cherchent une partie rapide au même moment
+  const allWaiting = getAllWaitingPlayers();
+  if (allWaiting.length >= 2) {
+    const matchedItems = [];
+    for (const m of ['ffa', '1', '2', '3']) {
+      while (queues[m] && queues[m].length > 0 && matchedItems.length < 8) {
+        matchedItems.push(queues[m].shift());
+      }
+    }
+    // Si l'un des joueurs a choisi FFA ou si les modes diffèrent -> arène FFA conviviale
+    const matchMode = matchedItems.some((x) => x.currentQueueMode === 'ffa') ? 'ffa' : matchedItems[0].currentQueueMode;
+    launchMatchWithPlayers(matchedItems, matchMode);
+    emitQueue('ffa');
+    return true;
+  }
+
   emitQueue(mode);
+  return false;
 }
 
 function leaveEverything(socket) {
@@ -580,12 +682,15 @@ io.on('connection', (socket) => {
   });
 
   socket.on('quickPlay', (d = {}) => {
-    const mode = validMode(d.mode);
+    const mode = String(validMode(d.mode));
     leaveEverything(socket);
     if (!queues[mode]) queues[mode] = [];
-    queues[mode].push(socket.id);
+    queues[mode].push({ id: socket.id, category: d.category || 'all' });
     emitQueue(mode);
-    tryMatch(mode);
+    const matched = tryMatch(mode);
+    if (!matched) {
+      scheduleBotFallback(socket.id, mode, d.category || 'all');
+    }
   });
 
   socket.on('cancelQueue', () => leaveQueue(socket.id));

@@ -216,7 +216,7 @@
     ensureProfile();
     const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
     socket.emit('quickPlay', { mode: selectedMode, category: cat });
-    showQueue({ mode: selectedMode, count: 1, needed: selectedMode === 'ffa' ? 4 : (selectedMode * 2) });
+    showQueue({ mode: selectedMode, count: 1, needed: 2 });
   });
 
   $('#btn-create').addEventListener('click', () => {
@@ -244,12 +244,13 @@
   }
 
   // ─────────── File d'attente ───────────
-  function showQueue({ mode, count, needed }) {
+  function showQueue({ mode, count, needed, totalSearching } = {}) {
     show('queue');
-    $('#queue-count').textContent = count;
-    $('#queue-needed').textContent = needed;
-    $('#queue-mode').textContent = mode === 'ffa' ? 'Mode Chacun pour soi (FFA)' : `Mode ${mode}v${mode}`;
-    $('#btn-queue-bots').dataset.mode = mode;
+    const displayCount = Math.max(1, (count !== undefined ? count : (totalSearching || 1)));
+    $('#queue-count').textContent = displayCount;
+    $('#queue-needed').textContent = needed || 2;
+    $('#queue-mode').textContent = (mode === 'ffa' || mode === 'solo') ? 'Mode Chacun pour soi (FFA)' : `Mode ${mode}v${mode}`;
+    $('#btn-queue-bots').dataset.mode = mode || selectedMode;
     if (!$('#queue-tip').textContent) $('#queue-tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
   }
 
