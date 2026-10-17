@@ -1,0 +1,15 @@
+{
+  "name": "quiz-bagarre",
+  "version": "1.0.0",
+  "description": "Jeu multijoueur de culture générale en 1v1, 2v2 ou 3v3 — style goofy blocky",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}

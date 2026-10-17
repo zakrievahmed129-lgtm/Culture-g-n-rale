@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Bagarre ! — Battle de culture générale & Chacun pour soi</title>
+  <meta name="description" content="Affronte tes potes ou des bots en 1v1, 2v2, 3v3 ou Chacun pour Soi illimité ! Combos, power-ups, avatars Roblox et questions de culture générale délirantes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Luckiest+Guy&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+</head>
+<body>
+  <!-- Décor Roblox blocky -->
+  <div class="sky" aria-hidden="true">
+    <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div><div class="cloud c4"></div>
+    <div class="floaty f1">?</div><div class="floaty f2">!</div><div class="floaty f3">?</div>
+    <div class="floaty f4">★</div><div class="floaty f5">?</div><div class="floaty f6">!</div>
+  </div>
+  <div class="baseplate" aria-hidden="true"></div>
+
+  <!-- Barre du haut : son, musique, pièces -->
+  <header class="top-bar">
+    <div class="coin-badge" id="coin-badge" title="Tes Noob-Bux gagnés">
+      <span class="coin-icon">🪙</span>
+      <b id="user-coins">0</b>
+      <span class="coin-lbl">Noob-Bux</span>
+    </div>
+    <div class="top-actions">
+      <button id="btn-music" class="icon-btn" title="Musique 8-bit on/off">🎵</button>
+      <button id="btn-mute" class="icon-btn" title="Bruitages on/off">🔊</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- ═════════════ ACCUEIL ═════════════ -->
+    <section id="screen-home" class="screen active">
+      <header class="logo-wrap">
+        <h1 class="logo" aria-label="Quiz Bagarre">
+          <span class="logo-line l1"><b>Q</b><b>U</b><b>I</b><b>Z</b></span>
+          <span class="logo-line l2"><b>B</b><b>A</b><b>G</b><b>A</b><b>R</b><b>R</b><b>E</b><b>!</b></span>
+        </h1>
+        <p class="tagline">La battle de culture générale la plus <em>goofy</em> du web 🧠💥</p>
+      </header>
+
+      <div class="home-grid">
+        <!-- Panneau Avatar & Personnalisation -->
+        <div class="panel avatar-panel">
+          <div class="panel-header-row">
+            <h2 class="panel-title">🧍 Ton avatar</h2>
+            <button id="btn-random-avatar" class="btn btn-purple btn-sm">🎲 Aléatoire</button>
+          </div>
+          <div class="avatar-stage">
+            <div id="avatar-preview" class="avatar-big"></div>
+            <div class="stage-shadow"></div>
+          </div>
+          <div id="avatar-controls" class="avatar-controls"></div>
+        </div>
+
+        <!-- Panneau de Jeu & Modes -->
+        <div class="panel play-panel">
+          <label class="field-label" for="input-name">Ton pseudo</label>
+          <input id="input-name" class="input" maxlength="16" placeholder="Noob_du_93" autocomplete="off" />
+
+          <span class="field-label">Mode de combat</span>
+          <div class="mode-picker four-modes" id="mode-picker">
+            <button class="mode-btn active" data-mode="ffa">
+              <span class="mode-big">💥 FFA</span>
+              <span class="mode-sub">Chacun pour soi</span>
+            </button>
+            <button class="mode-btn" data-mode="1">
+              <span class="mode-big">1v1</span>
+              <span class="mode-sub">Duel</span>
+            </button>
+            <button class="mode-btn" data-mode="2">
+              <span class="mode-big">2v2</span>
+              <span class="mode-sub">Duo</span>
+            </button>
+            <button class="mode-btn" data-mode="3">
+              <span class="mode-big">3v3</span>
+              <span class="mode-sub">Squad</span>
+            </button>
+          </div>
+
+          <button id="btn-quick" class="btn btn-green btn-xl">⚡ Partie rapide</button>
+          <div class="row">
+            <button id="btn-create" class="btn btn-blue">🏠 Créer un salon</button>
+            <button id="btn-bots" class="btn btn-yellow">🤖 Vs Bots (Immédiat)</button>
+          </div>
+
+          <div class="join-row">
+            <input id="input-code" class="input input-code" maxlength="4" placeholder="CODE" autocomplete="off" />
+            <button id="btn-join" class="btn btn-red">Rejoindre</button>
+          </div>
+
+          <ul class="rules">
+            <li>💥 <b>Chacun pour soi</b> ou par équipe</li>
+            <li>❓ <b>15 s</b> par question</li>
+            <li>🔥 <b>Séries & Combos</b> x2 pour les rapides</li>
+            <li>💣 <b>Power-ups</b> 50/50, Banane, Bouclier !</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ FILE D'ATTENTE ═════════════ -->
+    <section id="screen-queue" class="screen">
+      <div class="panel queue-panel">
+        <div class="queue-avatar"><div id="queue-avatar" class="avatar-big spin-goofy"></div></div>
+        <h2 class="big-title">Recherche d'adversaires<span class="dots"><i>.</i><i>.</i><i>.</i></span></h2>
+        <p class="queue-count"><span id="queue-count">1</span> / <span id="queue-needed">4</span> joueurs</p>
+        <p class="muted" id="queue-mode">Mode Chacun pour soi</p>
+        <p class="tip" id="queue-tip"></p>
+        <div class="row">
+          <button id="btn-queue-bots" class="btn btn-yellow">🤖 Lancer avec des bots</button>
+          <button id="btn-queue-cancel" class="btn btn-red">✖ Annuler</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ SALON ═════════════ -->
+    <section id="screen-lobby" class="screen">
+      <div class="lobby-top panel">
+        <div class="code-box">
+          <span class="code-label">CODE DU SALON</span>
+          <button id="btn-copy" class="code-value" title="Copier le code">----</button>
+          <span class="code-hint">clique pour copier le lien d'invitation 📋</span>
+        </div>
+
+        <div class="lobby-mode-box">
+          <span class="code-label">MODE</span>
+          <div class="mode-picker small four-modes" id="lobby-mode-picker">
+            <button class="mode-btn" data-mode="ffa"><span class="mode-big">💥 FFA</span></button>
+            <button class="mode-btn" data-mode="1"><span class="mode-big">1v1</span></button>
+            <button class="mode-btn" data-mode="2"><span class="mode-big">2v2</span></button>
+            <button class="mode-btn" data-mode="3"><span class="mode-big">3v3</span></button>
+          </div>
+        </div>
+
+        <!-- Paramètres personnalisables (Hôte) -->
+        <div class="lobby-settings" id="lobby-settings">
+          <div class="setting-item">
+            <label class="setting-lbl">⏱ Durée</label>
+            <select id="sel-duration" class="setting-select">
+              <option value="120000">2 min (Blitz)</option>
+              <option value="180000">3 min (Rapide)</option>
+              <option value="300000" selected>5 min (Classique)</option>
+              <option value="600000">10 min (Marathon)</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label class="setting-lbl">❓ Temps/Question</label>
+            <select id="sel-qtime" class="setting-select">
+              <option value="10000">10 s (Speedrun)</option>
+              <option value="15000" selected>15 s (Standard)</option>
+              <option value="20000">20 s (Tranquille)</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label class="setting-lbl">📚 Thème</label>
+            <select id="sel-category" class="setting-select">
+              <option value="all" selected>Toutes les catégories</option>
+              <option value="Jeux vidéo">🎮 Jeux vidéo</option>
+              <option value="Pop Culture">🍿 Pop Culture & Web</option>
+              <option value="Géographie">🌍 Géographie</option>
+              <option value="Histoire">🏛️ Histoire</option>
+              <option value="Sciences">🔬 Sciences</option>
+              <option value="Animaux">🐾 Animaux</option>
+              <option value="Sport">⚽ Sport</option>
+              <option value="Cinéma">🎬 Cinéma & Séries</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Affichage selon le mode : FFA (Arène unifiée) OU Teams (Rouge vs Bleu) -->
+      <div id="lobby-ffa-container" class="lobby-ffa-view panel">
+        <div class="ffa-header">
+          <h2 class="panel-title">⚔️ Arène Chacun pour Soi (<span id="ffa-player-count">0</span> combattants)</h2>
+          <div class="ffa-bot-buttons" id="ffa-bot-controls">
+            <button id="btn-add-bot-1" class="btn btn-yellow btn-sm">+ 🤖 1 Bot</button>
+            <button id="btn-add-bot-5" class="btn btn-purple btn-sm">+ 🤖 5 Bots (Chaos !)</button>
+          </div>
+        </div>
+        <div class="ffa-grid" id="ffa-slots"></div>
+      </div>
+
+      <div id="lobby-teams-container" class="teams">
+        <div class="team-col red">
+          <h2 class="team-title">🔴 Équipe Rouge</h2>
+          <div class="slots" id="slots-red"></div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="team-col blue">
+          <h2 class="team-title">🔵 Équipe Bleue</h2>
+          <div class="slots" id="slots-blue"></div>
+        </div>
+      </div>
+
+      <p class="lobby-status" id="lobby-status"></p>
+
+      <div class="row center">
+        <button id="btn-switch" class="btn btn-purple">🔄 Changer d'équipe</button>
+        <button id="btn-start" class="btn btn-green btn-xl">▶ LANCER LA BAGARRE</button>
+        <button id="btn-leave" class="btn btn-red">🚪 Quitter</button>
+      </div>
+
+      <!-- Tchat & Emotes -->
+      <div class="chat-section panel">
+        <div class="chat-messages" id="lobby-chat-log"></div>
+        <div class="chat-quick-buttons" id="quick-chats">
+          <button class="btn-quick-chat">OOF ! 💀</button>
+          <button class="btn-quick-chat">T'es trop lent frérot 😂</button>
+          <button class="btn-quick-chat">C'est truqué !! 😤</button>
+          <button class="btn-quick-chat">EZ 💅</button>
+          <button class="btn-quick-chat">GG ! 👏</button>
+          <button class="btn-quick-chat">Aidez-moi 😭</button>
+        </div>
+        <form class="chat-form" id="lobby-chat-form">
+          <input type="text" id="lobby-chat-input" class="input chat-input" maxlength="70" placeholder="Tape un message dans le salon..." autocomplete="off" />
+          <button type="submit" class="btn btn-blue btn-sm">Envoyer 💬</button>
+        </form>
+      </div>
+
+      <div class="emote-bar" data-emote-bar></div>
+    </section>
+
+    <!-- ═════════════ JEU ═════════════ -->
+    <section id="screen-game" class="screen">
+      <!-- HUD en mode Team (Rouge vs Bleu) -->
+      <div class="hud" id="hud-teams">
+        <div class="team-hud red">
+          <div class="team-hud-head"><span>ROUGE</span><span class="team-score" id="score-red">0</span></div>
+          <div class="team-players" id="players-red"></div>
+        </div>
+        <div class="clock" id="clock-box-teams">
+          <span class="clock-label">⏱ CHRONO</span>
+          <span class="game-clock">5:00</span>
+        </div>
+        <div class="team-hud blue">
+          <div class="team-hud-head"><span class="team-score" id="score-blue">0</span><span>BLEUE</span></div>
+          <div class="team-players" id="players-blue"></div>
+        </div>
+      </div>
+
+      <!-- HUD en mode FFA (Chacun pour soi : Leaderboard en direct) -->
+      <div class="hud-ffa panel" id="hud-ffa">
+        <div class="ffa-hud-left">
+          <div class="my-status-box" id="my-ffa-status">
+            <span class="my-rank-label">TON RANG</span>
+            <span class="my-rank" id="my-rank-display">#1</span>
+            <span class="my-pts" id="my-pts-display">0 pts</span>
+            <span class="my-streak" id="my-streak-display"></span>
+          </div>
+        </div>
+        <div class="clock" id="clock-box-ffa">
+          <span class="clock-label">⏱ CHRONO</span>
+          <span class="game-clock">5:00</span>
+        </div>
+        <div class="ffa-hud-right">
+          <span class="board-title">CLASSEMENT EN DIRECT</span>
+          <div class="ffa-leaderboard" id="ffa-leaderboard"></div>
+        </div>
+      </div>
+
+      <!-- Carte Question -->
+      <div class="question-card panel" id="question-card">
+        <div class="q-meta">
+          <span class="q-cat" id="q-cat">Prépare-toi</span>
+          <span class="q-streak-badge" id="q-streak-badge"></span>
+          <span class="q-num" id="q-num">Question 0</span>
+        </div>
+        <h2 class="q-text" id="q-text">Ça va bientôt commencer…</h2>
+        <div class="q-timer">
+          <div class="q-timer-fill" id="q-timer-fill"></div>
+          <span class="q-timer-num" id="q-timer-num">15</span>
+        </div>
+        <!-- Anecdote "Le savais-tu ?" affichée lors de la révélation -->
+        <div class="q-funfact" id="q-funfact"></div>
+      </div>
+
+      <!-- 4 Boutons de Réponses -->
+      <div class="answers" id="answers">
+        <button class="answer a0" data-idx="0"><span class="shape">▲</span><span class="ans-text"></span></button>
+        <button class="answer a1" data-idx="1"><span class="shape">◆</span><span class="ans-text"></span></button>
+        <button class="answer a2" data-idx="2"><span class="shape">●</span><span class="ans-text"></span></button>
+        <button class="answer a3" data-idx="3"><span class="shape">■</span><span class="ans-text"></span></button>
+      </div>
+
+      <!-- Barre de Power-ups (Gadgets Roblox) -->
+      <div class="powerups-bar panel">
+        <div class="powerup-title">⚡ TES GADGETS :</div>
+        <div class="powerup-list">
+          <button id="pw-bomb" class="powerup-btn" title="Élimine 2 mauvaises réponses de ton écran">
+            <span class="pw-icon">💣</span>
+            <span class="pw-name">50/50</span>
+            <span class="pw-badge" id="pw-count-bomb">1</span>
+          </button>
+          <button id="pw-banana" class="powerup-btn" title="Fait glisser et secouer l'écran des adversaires !">
+            <span class="pw-icon">🍌</span>
+            <span class="pw-name">Banane</span>
+            <span class="pw-badge" id="pw-count-banana">1</span>
+          </button>
+          <button id="pw-double" class="powerup-btn" title="Double tes points sur cette question !">
+            <span class="pw-icon">⚡</span>
+            <span class="pw-name">Double x2</span>
+            <span class="pw-badge" id="pw-count-double">1</span>
+          </button>
+          <button id="pw-shield" class="powerup-btn" title="Protège ta série même si tu te trompes">
+            <span class="pw-icon">🛡️</span>
+            <span class="pw-name">Bouclier</span>
+            <span class="pw-badge" id="pw-count-shield">1</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="banner" id="banner"></div>
+
+      <!-- Quick chat en partie -->
+      <div class="game-chat-bar">
+        <button class="btn-quick-chat">OOF ! 💀</button>
+        <button class="btn-quick-chat">Trop facile 😂</button>
+        <button class="btn-quick-chat">C'est truqué ! 😤</button>
+        <button class="btn-quick-chat">GG ! 👏</button>
+      </div>
+
+      <div class="emote-bar" data-emote-bar></div>
+
+      <!-- Overlay Compte à rebours 3-2-1-GO -->
+      <div class="countdown-overlay" id="countdown"><span id="countdown-num">3</span></div>
+
+      <!-- Effet peau de banane (quand un ennemi te troll) -->
+      <div class="banana-slip-overlay" id="banana-overlay">
+        <span class="banana-big">🍌</span>
+        <span class="banana-text" id="banana-text">GLISSADE !</span>
+      </div>
+    </section>
+
+    <!-- ═════════════ FIN DE PARTIE ═════════════ -->
+    <section id="screen-end" class="screen">
+      <div class="end-title" id="end-title">VICTOIRE !</div>
+      <p class="end-sub" id="end-sub"></p>
+
+      <!-- Scores équipes (si team mode) -->
+      <div class="end-scores" id="end-team-scores">
+        <div class="end-team red"><span>ROUGE</span><b id="end-red">0</b></div>
+        <div class="vs-badge">VS</div>
+        <div class="end-team blue"><span>BLEUE</span><b id="end-blue">0</b></div>
+      </div>
+
+      <!-- Récompense de pièces -->
+      <div class="coins-reward-card panel" id="end-coins-reward">
+        <span>🪙 Butin gagné :</span>
+        <b id="end-coins-earned">+50 Noob-Bux</b>
+      </div>
+
+      <div class="podium panel" id="end-players"></div>
+
+      <div class="row center">
+        <button id="btn-replay" class="btn btn-green btn-xl">🔁 Rejouer</button>
+        <span id="end-wait" class="muted">En attente de l'hôte pour rejouer…</span>
+        <button id="btn-menu" class="btn btn-blue">🏠 Menu</button>
+      </div>
+
+      <div class="emote-bar" data-emote-bar></div>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts"></div>
+  <div id="fx" class="fx" aria-hidden="true"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="avatar.js"></script>
+  <script src="sound.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
