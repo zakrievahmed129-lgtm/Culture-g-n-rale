@@ -91,8 +91,14 @@
   }
 
   function toast(msg, type = '') {
+    let box = $('#toasts');
+    if (!box) {
+      box = el('div', 'toasts');
+      box.id = 'toasts';
+      document.body.appendChild(box);
+    }
     const t = el('div', 'toast ' + type, msg);
-    $('#toasts').appendChild(t);
+    box.appendChild(t);
     setTimeout(() => t.remove(), 3200);
   }
 
@@ -201,6 +207,14 @@
     setHomeMode(b.dataset.mode);
   });
 
+  // ─────────── Configuration du matchmaking actif ───────────
+  let currentQueueConfig = {
+    mode: selectedMode,
+    gameType: 'quiz',
+    category: 'all',
+    cpsDurationMs: 15000,
+  };
+
   const homeCategorySelect = $('#home-category');
   let selectedCategory = localStorage.getItem('qb_category') || 'all';
   if (homeCategorySelect) {
@@ -212,23 +226,70 @@
     });
   }
 
+  // Lancement Partie Rapide (Quiz de Culture Générale)
   $('#btn-quick').addEventListener('click', () => {
     ensureProfile();
     const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
-    socket.emit('quickPlay', { mode: selectedMode, category: cat });
-    showQueue({ mode: selectedMode, count: 1, needed: 2 });
+    currentQueueConfig = {
+      mode: selectedMode,
+      gameType: 'quiz',
+      category: cat,
+      cpsDurationMs: 15000,
+    };
+    socket.emit('quickPlay', { mode: selectedMode, category: cat, gameType: 'quiz' });
+    showQueue({
+      mode: selectedMode,
+      gameType: 'quiz',
+      count: 1,
+      needed: (selectedMode === 2 ? 4 : (selectedMode === 3 ? 6 : 2)),
+    });
   });
 
-  $('#btn-create').addEventListener('click', () => {
-    ensureProfile();
-    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
-    socket.emit('createRoom', { mode: selectedMode, category: cat });
-  });
-
+  // Lancement Vs Bots Immédiat (Quiz de Culture Générale)
   $('#btn-bots').addEventListener('click', () => {
     ensureProfile();
     const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
-    socket.emit('playWithBots', { mode: selectedMode, botCount: selectedMode === 'ffa' ? 5 : undefined, category: cat });
+    socket.emit('playWithBots', {
+      mode: selectedMode,
+      botCount: selectedMode === 'ffa' ? 5 : undefined,
+      category: cat,
+      gameType: 'quiz',
+    });
+  });
+
+  // Création d'un Salon Privé
+  $('#btn-create').addEventListener('click', () => {
+    ensureProfile();
+    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
+    socket.emit('createRoom', { mode: selectedMode, category: cat, gameType: 'quiz' });
+  });
+
+  // Mini-Jeu : Bataille de Clics (CPS Fight) - Lancement 1v1
+  $('#btn-launch-cps-1v1')?.addEventListener('click', () => {
+    ensureProfile();
+    Sound.boing();
+    currentQueueConfig = {
+      mode: 1,
+      gameType: 'cps',
+      category: 'all',
+      cpsDurationMs: 15000,
+    };
+    socket.emit('quickPlay', { mode: 1, gameType: 'cps', cpsDurationMs: 15000 });
+    showQueue({ mode: 1, gameType: 'cps', count: 1, needed: 2 });
+  });
+
+  // Mini-Jeu : Bataille de Clics (CPS Fight) - Lancement Battle Royale FFA
+  $('#btn-launch-cps-ffa')?.addEventListener('click', () => {
+    ensureProfile();
+    Sound.boing();
+    currentQueueConfig = {
+      mode: 'ffa',
+      gameType: 'cps',
+      category: 'all',
+      cpsDurationMs: 15000,
+    };
+    socket.emit('quickPlay', { mode: 'ffa', gameType: 'cps', cpsDurationMs: 15000 });
+    showQueue({ mode: 'ffa', gameType: 'cps', count: 1, needed: 2 });
   });
 
   const codeInput = $('#input-code');
@@ -244,18 +305,38 @@
   }
 
   // ─────────── File d'attente ───────────
-  function showQueue({ mode, count, needed, totalSearching } = {}) {
+  function showQueue({ mode, gameType, count, needed, totalSearching } = {}) {
     show('queue');
+    const effectiveMode = (mode !== undefined && mode !== null) ? mode : currentQueueConfig.mode;
+    const effectiveGameType = (gameType !== undefined && gameType !== null) ? gameType : currentQueueConfig.gameType;
+    currentQueueConfig.mode = effectiveMode;
+    currentQueueConfig.gameType = effectiveGameType;
+
     const displayCount = Math.max(1, (count !== undefined ? count : (totalSearching || 1)));
     $('#queue-count').textContent = displayCount;
-    $('#queue-needed').textContent = needed || 2;
-    $('#queue-mode').textContent = (mode === 'ffa' || mode === 'solo') ? 'Mode Chacun pour soi (FFA)' : `Mode ${mode}v${mode}`;
-    $('#btn-queue-bots').dataset.mode = mode || selectedMode;
-    if (!$('#queue-tip').textContent) $('#queue-tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+    $('#queue-needed').textContent = needed || (effectiveMode === 2 ? 4 : (effectiveMode === 3 ? 6 : 2));
+
+    const isCps = effectiveGameType === 'cps' || String(effectiveMode).startsWith('cps');
+    if (isCps) {
+      $('#queue-mode').textContent = effectiveMode === 'ffa'
+        ? '🥊 Mini-Jeu : Bataille de Clics FFA'
+        : '🥊 Mini-Jeu : Duel de Vitesse CPS (1v1)';
+      $('#queue-tip').textContent = '💡 Prépare tes doigts ! Climax à 10 CPS pour débloquer la Fureur !';
+    } else {
+      $('#queue-mode').textContent = (effectiveMode === 'ffa' || effectiveMode === 'solo')
+        ? '🧠 Quiz Culture G — Chacun pour soi (FFA)'
+        : `🧠 Quiz Culture G — Mode ${effectiveMode}v${effectiveMode}`;
+      if (!$('#queue-tip').textContent || $('#queue-tip').textContent.includes('doigts')) {
+        $('#queue-tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+      }
+    }
   }
 
   setInterval(() => {
-    if (currentScreen === 'queue') $('#queue-tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+    if (currentScreen === 'queue') {
+      const isCps = currentQueueConfig.gameType === 'cps';
+      if (!isCps) $('#queue-tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+    }
   }, 5000);
 
   $('#btn-queue-cancel').addEventListener('click', () => {
@@ -263,10 +344,19 @@
     show('home');
   });
 
-  $('#btn-queue-bots').addEventListener('click', (e) => {
-    const m = e.currentTarget.dataset.mode || selectedMode;
-    const cat = homeCategorySelect ? homeCategorySelect.value : selectedCategory;
-    socket.emit('playWithBots', { mode: m, botCount: m === 'ffa' ? 5 : undefined, category: cat });
+  // Bouton "Lancer avec des bots" depuis la file d'attente
+  $('#btn-queue-bots').addEventListener('click', () => {
+    Sound.click();
+    const m = currentQueueConfig.mode;
+    const gt = currentQueueConfig.gameType;
+    const cat = currentQueueConfig.category || (homeCategorySelect ? homeCategorySelect.value : selectedCategory);
+    socket.emit('playWithBots', {
+      mode: m,
+      botCount: m === 'ffa' ? (gt === 'cps' ? 3 : 5) : undefined,
+      category: cat,
+      gameType: gt,
+      cpsDurationMs: currentQueueConfig.cpsDurationMs || 15000,
+    });
   });
 
   // ─────────── Salon & Paramètres ───────────
@@ -281,14 +371,32 @@
       b.classList.toggle('active', String(b.dataset.mode) === String(room.mode));
     });
 
-    // Options hôte (durée, temps, catégorie)
+    // Options hôte (jeu, durée, temps, catégorie, cps)
     const settingsBox = $('#lobby-settings');
     settingsBox.style.pointerEvents = isHost ? 'auto' : 'none';
     settingsBox.style.opacity = isHost ? '1' : '0.65';
+
+    const isCps = (room.gameType === 'cps');
+    const selGametype = $('#sel-gametype');
+    if (selGametype) selGametype.value = room.gameType || 'quiz';
+
+    const setDur = $('#lobby-setting-duration');
+    const setQtime = $('#lobby-setting-qtime');
+    const setCat = $('#lobby-setting-category');
+    const setCpsDur = $('#lobby-setting-cpsduration');
+
+    if (setDur) setDur.style.display = isCps ? 'none' : '';
+    if (setQtime) setQtime.style.display = isCps ? 'none' : '';
+    if (setCat) setCat.style.display = isCps ? 'none' : '';
+    if (setCpsDur) setCpsDur.style.display = isCps ? '' : 'none';
+
     if (room.settings) {
       if (room.settings.durationMs) $('#sel-duration').value = String(room.settings.durationMs);
       if (room.settings.questionMs) $('#sel-qtime').value = String(room.settings.questionMs);
       if (room.settings.category) $('#sel-category').value = room.settings.category;
+      if (room.settings.cpsDurationMs && $('#sel-cpsduration')) {
+        $('#sel-cpsduration').value = String(room.settings.cpsDurationMs);
+      }
     }
 
     const isFFA = room.mode === 'ffa';
@@ -394,17 +502,28 @@
     socket.emit('setMode', { mode: b.dataset.mode });
   });
 
-  ['#sel-duration', '#sel-qtime', '#sel-category'].forEach((id) => {
-    $(id).addEventListener('change', () => {
-      if (!room || room.hostId !== socket.id) return;
-      socket.emit('setSettings', {
-        durationMs: $('#sel-duration').value,
-        questionMs: $('#sel-qtime').value,
-        category: $('#sel-category').value,
+  ['#sel-duration', '#sel-qtime', '#sel-category', '#sel-cpsduration'].forEach((id) => {
+    const elNode = $(id);
+    if (elNode) {
+      elNode.addEventListener('change', () => {
+        if (!room || room.hostId !== socket.id) return;
+        socket.emit('setSettings', {
+          durationMs: $('#sel-duration')?.value,
+          questionMs: $('#sel-qtime')?.value,
+          category: $('#sel-category')?.value,
+          cpsDurationMs: $('#sel-cpsduration')?.value,
+        });
+        toast('Paramètres du salon mis à jour ! ⚙️');
+        Sound.pop();
       });
-      toast('Paramètres du salon mis à jour ! ⚙️');
-      Sound.pop();
-    });
+    }
+  });
+
+  $('#sel-gametype')?.addEventListener('change', () => {
+    if (!room || room.hostId !== socket.id) return;
+    const gt = $('#sel-gametype').value;
+    socket.emit('setGameType', { gameType: gt });
+    Sound.pop();
   });
 
   $('#btn-add-bot-1').addEventListener('click', () => {
@@ -660,9 +779,19 @@
   }
   function hideBanner() { $('#banner').className = 'banner'; }
 
+  function getFxContainer() {
+    let box = $('#fx');
+    if (!box) {
+      box = el('div', 'fx');
+      box.id = 'fx';
+      document.body.appendChild(box);
+    }
+    return box;
+  }
+
   function plusPop(text) {
     const p = el('div', 'plus-pop', text);
-    $('#fx').appendChild(p);
+    getFxContainer().appendChild(p);
     setTimeout(() => p.remove(), 1400);
   }
 
@@ -736,6 +865,7 @@
   // ─────────── Confetti ───────────
   function confetti(n = 150) {
     const colors = ['#ff4757', '#3b82f6', '#ffc312', '#2ed573', '#a55eea', '#ff8a1f', '#fff', '#ffd700'];
+    const fxBox = getFxContainer();
     for (let i = 0; i < n; i++) {
       const c = el('div', 'confetti');
       c.style.left = Math.random() * 100 + 'vw';
@@ -745,7 +875,7 @@
       c.style.setProperty('--rot', (Math.random() * 1080 - 540) + 'deg');
       c.style.animationDuration = (2.2 + Math.random() * 2.5) + 's';
       c.style.animationDelay = Math.random() * 0.8 + 's';
-      $('#fx').appendChild(c);
+      fxBox.appendChild(c);
       setTimeout(() => c.remove(), 6000);
     }
   }
@@ -799,11 +929,18 @@
     }
   });
 
-  socket.on('countdown', ({ ms }) => {
-    show('game');
-    resetGameUI();
-    renderHud();
-    runCountdown(ms);
+  socket.on('countdown', ({ ms, gameType, mode }) => {
+    const isCps = (gameType === 'cps') || (room && room.gameType === 'cps') || (currentQueueConfig && currentQueueConfig.gameType === 'cps');
+    if (isCps) {
+      show('cps');
+      if (typeof setupCpsPreFight === 'function') setupCpsPreFight(room);
+      if (typeof runCpsCountdown === 'function') runCpsCountdown(ms);
+    } else {
+      show('game');
+      resetGameUI();
+      renderHud();
+      runCountdown(ms);
+    }
   });
 
   socket.on('question', (d) => {
@@ -1367,6 +1504,860 @@
       }, cheatSettings.delay);
     }
   });
+
+  // ═══════════════════════════════════════════════════════════
+  //  MOTEUR DE COMBAT CPS EN TEMPS RÉEL (CPS FIGHT)
+  // ═══════════════════════════════════════════════════════════
+  let cpsActive = false;
+  let cpsDuel = true;
+  let myCpsClicks = 0;
+  let myRecentClicks = [];
+  let myLiveCps = 0;
+  let myPeakCps = 0;
+  let myFrenzy = 0;
+  let isFrenzyActive = false;
+  let frenzyUntilTime = 0;
+  let myComboCount = 0;
+  let comboResetTimer = null;
+  let cpsCanvas = null;
+  let cpsCtx = null;
+  let cpsParticles = [];
+  let cpsAnimFrameId = null;
+  let cpsOpponentId = null;
+  let lastPunchLeft = false;
+
+  function initCpsCanvas() {
+    cpsCanvas = $('#cps-canvas');
+    if (!cpsCanvas) return;
+    cpsCtx = cpsCanvas.getContext('2d');
+    resizeCpsCanvas();
+    window.removeEventListener('resize', resizeCpsCanvas);
+    window.addEventListener('resize', resizeCpsCanvas);
+  }
+
+  function resizeCpsCanvas() {
+    if (!cpsCanvas) return;
+    const parent = cpsCanvas.parentElement;
+    if (parent) {
+      cpsCanvas.width = parent.clientWidth || 300;
+      cpsCanvas.height = parent.clientHeight || 120;
+    }
+  }
+
+  function spawnCpsSparks(x, y, count = 6) {
+    if (!cpsCanvas) return;
+    const colors = ['#ff4757', '#ffa502', '#3b82f6', '#00d2d3', '#ffd700', '#ffffff', '#a55eea'];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 3.0 + Math.random() * 6.5;
+      cpsParticles.push({
+        type: 'spark',
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 1.5,
+        size: 3 + Math.random() * 4.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1,
+        life: 0.7 + Math.random() * 0.45,
+      });
+    }
+  }
+
+  function spawnShockwave(x, y, color = '#ffd700') {
+    cpsParticles.push({
+      type: 'wave',
+      x,
+      y,
+      radius: 8,
+      color,
+      alpha: 1,
+      life: 0.55,
+    });
+  }
+
+  // Trace d'éclair électrique DBZ / Kamehameha Clash
+  function drawElectricArc(ctx, x1, y1, x2, y2, color = '#ffd700') {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 9;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    let curX = x1;
+    let curY = y1;
+    const steps = 6;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const targetX = x1 + (x2 - x1) * t;
+      const targetY = y1 + (y2 - y1) * t;
+      const offset = (Math.random() - 0.5) * 22;
+      curX = targetX + offset;
+      curY = targetY + offset;
+      ctx.lineTo(curX, curY);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function renderCpsParticles() {
+    if (!cpsActive || !cpsCtx || !cpsCanvas) return;
+    cpsCtx.clearRect(0, 0, cpsCanvas.width, cpsCanvas.height);
+
+    // Éclairs électriques au centre du clash
+    if (cpsDuel && Math.random() < 0.38) {
+      const core = $('#cps-clash-core');
+      if (core) {
+        const cr = core.getBoundingClientRect();
+        const canvasR = cpsCanvas.getBoundingClientRect();
+        const coreX = cr.left - canvasR.left + cr.width / 2;
+        const coreY = cr.top - canvasR.top + cr.height / 2;
+        const targetX = coreX + (Math.random() < 0.5 ? -1 : 1) * (50 + Math.random() * 90);
+        const targetY = coreY + (Math.random() * 50 - 25);
+        const arcColor = isFrenzyActive ? '#ff4757' : (Math.random() < 0.5 ? '#ffd700' : '#00d2d3');
+        drawElectricArc(cpsCtx, coreX, coreY, targetX, targetY, arcColor);
+      }
+    }
+
+    for (let i = cpsParticles.length - 1; i >= 0; i--) {
+      const p = cpsParticles[i];
+      p.life -= 0.025;
+      p.alpha = Math.max(0, p.life);
+
+      if (p.type === 'wave') {
+        p.radius += 4.5;
+        cpsCtx.save();
+        cpsCtx.beginPath();
+        cpsCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        cpsCtx.strokeStyle = p.color;
+        cpsCtx.lineWidth = 3.5;
+        cpsCtx.globalAlpha = p.alpha;
+        cpsCtx.stroke();
+        cpsCtx.restore();
+      } else {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.22; // gravité
+        cpsCtx.save();
+        cpsCtx.beginPath();
+        cpsCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        cpsCtx.fillStyle = p.color;
+        cpsCtx.globalAlpha = p.alpha;
+        cpsCtx.shadowColor = p.color;
+        cpsCtx.shadowBlur = 10;
+        cpsCtx.fill();
+        cpsCtx.restore();
+      }
+
+      if (p.life <= 0) {
+        cpsParticles.splice(i, 1);
+      }
+    }
+
+    cpsAnimFrameId = requestAnimationFrame(renderCpsParticles);
+  }
+
+  const COMIC_WORDS = ['POW!', 'BAM!', 'SMASH!', 'CRIT! x2', 'ORA ORA!', 'BOOM!', '+1', 'TURBO!', 'OOF!', 'GODSPEED!'];
+  function spawnFloatingCombatText(x, y, text = null) {
+    const word = text || COMIC_WORDS[Math.floor(Math.random() * COMIC_WORDS.length)];
+    const floater = el('div', 'cps-floating-text', word);
+    const rot = (Math.random() * 26 - 13);
+    floater.style.left = (x || (window.innerWidth / 2 + (Math.random() * 120 - 60))) + 'px';
+    floater.style.top = (y || (window.innerHeight / 2 + (Math.random() * 80 - 40))) + 'px';
+    floater.style.setProperty('--rot', rot + 'deg');
+    document.body.appendChild(floater);
+    setTimeout(() => floater.remove(), 750);
+  }
+
+  function getCpsTier(cps) {
+    if (cps < 4) return { label: '🐢 Débutant', cls: 'tier-0', aura: 'aura-calm' };
+    if (cps < 7) return { label: '⚡ Bon Rythme', cls: 'tier-1', aura: 'aura-electric' };
+    if (cps < 10) return { label: '🔥 Machine de Guerre', cls: 'tier-2', aura: 'aura-fire' };
+    if (cps < 14) return { label: '💥 Godspeed Skibidi', cls: 'tier-3', aura: 'aura-rage' };
+    return { label: '🌌 Vitesse Cosmique', cls: 'tier-4', aura: 'aura-god' };
+  }
+
+  // ─────────── Évaluation de Niveau & Rang CPS ───────────
+  function evaluateCpsRank(playerData, isWinner, isKo, matchDuration) {
+    const peak = Number(playerData.peakCps) || 0;
+    const avg = Number(playerData.avgCps) || 0;
+    const clicks = Number(playerData.clicks) || 0;
+
+    // Score de maîtrise composite (0 - 100)
+    let rawScore = (peak * 3.6) + (avg * 4.6) + Math.min(22, clicks * 0.16);
+    if (isWinner) rawScore += 8;
+    if (isKo && isWinner) rawScore += 12;
+    const masteryScore = Math.min(100, Math.max(12, Math.round(rawScore)));
+
+    if (peak >= 14 || avg >= 11 || (isKo && isWinner && peak >= 12.5) || masteryScore >= 93) {
+      return {
+        tierKey: 'sss',
+        grade: 'SSS+',
+        stars: '★★★★★',
+        title: '🌌 DIVINITÉ DU CLIC (CYBORG)',
+        level: 'NIVEAU 99 — MAÎTRE COSMIQUE',
+        comment: 'Absolument surhumain ! Tes doigts défient les lois de la physique. Même les bots tremblent devant toi !',
+        badgeCls: 'rank-sss',
+        mastery: masteryScore,
+        rewardCoins: 50,
+        rewardLabel: '+50 Noob-Bux 🪙',
+      };
+    }
+    if (peak >= 10.5 || avg >= 8.2 || masteryScore >= 78) {
+      return {
+        tierKey: 's',
+        grade: 'S',
+        stars: '★★★★☆',
+        title: '⚡ MITRAILLEUSE CYBERNÉTIQUE',
+        level: 'NIVEAU 80 — TITAN DU JITTERCLICK',
+        comment: 'Cadence monstrueuse ! Une explosivité et un tempo dignes des plus grands champions d’e-sport !',
+        badgeCls: 'rank-s',
+        mastery: masteryScore,
+        rewardCoins: 40,
+        rewardLabel: '+40 Noob-Bux 🪙',
+      };
+    }
+    if (peak >= 8.0 || avg >= 6.2 || masteryScore >= 64) {
+      return {
+        tierKey: 'a',
+        grade: 'A',
+        stars: '★★★☆☆',
+        title: '🔥 TIGRE FULGURANT',
+        level: 'NIVEAU 60 — BAGARREUR EXPERT',
+        comment: 'Superbe vitesse et excellent tempo ! Tu as mis la pression dès les premières secondes.',
+        badgeCls: 'rank-a',
+        mastery: masteryScore,
+        rewardCoins: 30,
+        rewardLabel: '+30 Noob-Bux 🪙',
+      };
+    }
+    if (peak >= 5.8 || avg >= 4.5 || masteryScore >= 48) {
+      return {
+        tierKey: 'b',
+        grade: 'B',
+        stars: '★★☆☆☆',
+        title: '🥊 BOXEUR CONFIRMÉ',
+        level: 'NIVEAU 40 — COMBATTANT SOLIDE',
+        comment: 'Bon rythme de frappe ! Avec un peu plus d’endurance sur la durée, le rang A est à toi.',
+        badgeCls: 'rank-b',
+        mastery: masteryScore,
+        rewardCoins: 20,
+        rewardLabel: '+20 Noob-Bux 🪙',
+      };
+    }
+    if (peak >= 3.8 || avg >= 2.8 || masteryScore >= 32) {
+      return {
+        tierKey: 'c',
+        grade: 'C',
+        stars: '★☆☆☆☆',
+        title: '🐥 POUSSIN ÉNERGIQUE',
+        level: 'NIVEAU 20 — APPRENTI DU CLIC',
+        comment: 'Pas mal pour commencer ! Mais tes doigts fatiguent en fin de match. Échauffe tes poignets !',
+        badgeCls: 'rank-c',
+        mastery: masteryScore,
+        rewardCoins: 15,
+        rewardLabel: '+15 Noob-Bux 🪙',
+      };
+    }
+    return {
+      tierKey: 'd',
+      grade: 'D',
+      stars: '☆☆☆☆☆',
+      title: '🐢 TORTUE TRANQUILLE',
+      level: 'NIVEAU 5 — NOOB CHILL',
+      comment: 'Tu as cliqué avec un seul orteil ou tu sirotais un café pendant le duel ? Réveille-toi et mitraille !',
+      badgeCls: 'rank-d',
+      mastery: masteryScore,
+      rewardCoins: 10,
+      rewardLabel: '+10 Noob-Bux 🪙',
+    };
+  }
+
+  function triggerCpsHit(e) {
+    if (!cpsActive) return;
+
+    myCpsClicks++;
+    myComboCount++;
+    const now = Date.now();
+    myRecentClicks.push(now);
+    myRecentClicks = myRecentClicks.filter((t) => now - t <= 1000);
+    myLiveCps = myRecentClicks.length;
+    if (myLiveCps > myPeakCps) myPeakCps = myLiveCps;
+
+    // Mise à jour de la pilule de combo
+    const comboPill = $('#cps-combo-pill');
+    const comboVal = $('#cps-combo-val');
+    const comboText = $('#cps-combo-text');
+    if (comboPill && comboVal && comboText) {
+      comboPill.classList.add('active');
+      comboVal.textContent = myComboCount;
+      if (myComboCount >= 40) {
+        comboPill.className = 'cps-combo-pill active combo-god';
+        comboText.textContent = '🌌 DIEU DU CLIC !';
+      } else if (myComboCount >= 20) {
+        comboPill.className = 'cps-combo-pill active combo-high';
+        comboText.textContent = '🔥 HYPER BURST !';
+      } else if (myComboCount >= 10) {
+        comboPill.className = 'cps-combo-pill active';
+        comboText.textContent = '⚡ COMBO x' + myComboCount + ' !';
+      } else {
+        comboPill.className = 'cps-combo-pill active';
+        comboText.textContent = "HITS D'AFFILÉE !";
+      }
+
+      if (comboResetTimer) clearTimeout(comboResetTimer);
+      comboResetTimer = setTimeout(() => {
+        myComboCount = 0;
+        comboPill.classList.remove('active', 'combo-high', 'combo-god');
+      }, 1300);
+    }
+
+    // Progression Fureur / Rage
+    if (!isFrenzyActive) {
+      myFrenzy = Math.min(100, myFrenzy + 3.2);
+      const frenzyFill = $('#cps-frenzy-fill');
+      const frenzyPct = $('#cps-frenzy-pct');
+      if (frenzyFill) frenzyFill.style.width = myFrenzy + '%';
+      if (frenzyPct) frenzyPct.textContent = Math.round(myFrenzy) + '%';
+
+      if (myFrenzy >= 100) {
+        isFrenzyActive = true;
+        frenzyUntilTime = now + 3000;
+        Sound.frenzy();
+        toast('🔥 MODE FUREUR ACTIVÉ ! (PUISSANCE x2)', 'info');
+        $('#cps-fighter-left')?.classList.add('frenzy-mode');
+        $('#screen-cps')?.classList.add('screen-frenzy');
+      }
+    } else {
+      if (now > frenzyUntilTime) {
+        isFrenzyActive = false;
+        myFrenzy = 0;
+        const frenzyFill = $('#cps-frenzy-fill');
+        const frenzyPct = $('#cps-frenzy-pct');
+        if (frenzyFill) frenzyFill.style.width = '0%';
+        if (frenzyPct) frenzyPct.textContent = '0%';
+        $('#cps-fighter-left')?.classList.remove('frenzy-mode');
+        $('#screen-cps')?.classList.remove('screen-frenzy');
+      }
+    }
+
+    // Audio & Crits
+    const isCrit = isFrenzyActive || Math.random() < 0.18;
+    if (isCrit) {
+      Sound.critPunch();
+    } else {
+      Sound.punch(myCpsClicks);
+    }
+
+    // Animation 3D du bouton
+    const hitBtn = $('#cps-hit-btn');
+    if (hitBtn) {
+      hitBtn.classList.remove('btn-hit-active');
+      void hitBtn.offsetWidth;
+      hitBtn.classList.add('btn-hit-active');
+    }
+
+    // Rafale de coups sur l'avatar joueur gauche (multi gants)
+    const leftStage = $('#cps-left-stage');
+    if (leftStage) {
+      lastPunchLeft = !lastPunchLeft;
+      leftStage.classList.toggle('punch-alt', lastPunchLeft);
+      leftStage.classList.remove('punching');
+      void leftStage.offsetWidth;
+      leftStage.classList.add('punching');
+    }
+
+    // Bulle d'ambiance joueur gauche
+    const leftMood = $('#cps-left-mood');
+    if (leftMood) {
+      if (isFrenzyActive) leftMood.textContent = '🔥 ENRAGÉ x2 !';
+      else if (myLiveCps >= 12) leftMood.textContent = '⚡ ORA ORA ORA !';
+      else if (myLiveCps >= 8) leftMood.textContent = '💥 MITRAILLEUSE !';
+      else if (myLiveCps >= 5) leftMood.textContent = '🥊 EN RYTHME !';
+      else leftMood.textContent = '😤 Échauffement !';
+    }
+
+    // Texte de combat flottant et étincelles
+    let hitX = window.innerWidth / 2;
+    let hitY = window.innerHeight * 0.65;
+    if (e && e.clientX && e.clientY) {
+      hitX = e.clientX;
+      hitY = e.clientY;
+    } else if (hitBtn) {
+      const r = hitBtn.getBoundingClientRect();
+      hitX = r.left + r.width / 2 + (Math.random() * 80 - 40);
+      hitY = r.top + 20;
+    }
+    spawnFloatingCombatText(hitX, hitY);
+
+    // Particules de l'épicentre d'impact
+    const core = $('#cps-clash-core');
+    if (core && cpsCanvas) {
+      const cr = core.getBoundingClientRect();
+      const canvasR = cpsCanvas.getBoundingClientRect();
+      const coreX = cr.left - canvasR.left + cr.width / 2;
+      const coreY = cr.top - canvasR.top + cr.height / 2;
+      spawnCpsSparks(coreX, coreY, isCrit ? 10 : 6);
+      if (isCrit) spawnShockwave(coreX, coreY, isFrenzyActive ? '#ff4757' : '#ffd700');
+    }
+
+    // Mise à jour visuelle des compteurs et de l'aura
+    const leftClicks = $('#cps-left-clicks');
+    if (leftClicks) leftClicks.textContent = myCpsClicks;
+    const leftCps = $('#cps-left-cps');
+    if (leftCps) leftCps.innerHTML = `${myLiveCps.toFixed(1)} <small>CPS</small>`;
+    const tier = getCpsTier(myLiveCps);
+    const tierEl = $('#cps-left-tier');
+    if (tierEl) {
+      tierEl.textContent = tier.label;
+      tierEl.className = 'cps-tier-badge ' + tier.cls;
+    }
+
+    // Aura dynamique du joueur
+    const leftAura = $('#cps-left-aura');
+    if (leftAura) {
+      leftAura.className = 'cps-aura-flames ' + tier.aura;
+    }
+
+    // Micro secousse d'arène
+    const arena = $('#cps-arena-1v1');
+    if (arena) {
+      arena.classList.remove('shake-micro');
+      void arena.offsetWidth;
+      arena.classList.add('shake-micro');
+    }
+
+    // Envoi du clic au serveur
+    socket.emit('cpsClick', { count: 1, activateFrenzy: isFrenzyActive });
+  }
+
+  // Événements d'entrée utilisateur (souris, tactile, clavier)
+  const hitBtnNode = $('#cps-hit-btn');
+  if (hitBtnNode) {
+    hitBtnNode.addEventListener('pointerdown', (e) => {
+      triggerCpsHit(e);
+    });
+    hitBtnNode.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        triggerCpsHit(e.changedTouches[i]);
+      }
+    }, { passive: false });
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && cpsActive && !e.repeat) {
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA') {
+        e.preventDefault();
+        triggerCpsHit();
+      }
+    }
+  });
+
+  // Bouton pour quitter le mini-jeu CPS à tout moment
+  $('#btn-cps-quit')?.addEventListener('click', () => {
+    Sound.click();
+    cpsActive = false;
+    if (cpsAnimFrameId) cancelAnimationFrame(cpsAnimFrameId);
+    socket.emit('leaveRoom');
+    show('home');
+  });
+
+  let cpsCountdownTimers = [];
+  function runCpsCountdown(ms) {
+    cpsCountdownTimers.forEach(clearTimeout);
+    cpsCountdownTimers = [];
+    const ov = $('#cps-countdown');
+    const num = $('#cps-countdown-num');
+    if (!ov || !num) return;
+    ov.classList.add('show');
+    ov.style.display = 'flex';
+    const steps = ['3', '2', '1', 'COMBAT !'];
+    const step = (ms - 300) / steps.length;
+    steps.forEach((s, i) => {
+      cpsCountdownTimers.push(setTimeout(() => {
+        num.textContent = s;
+        restartAnim(num, 'pop');
+        if (s === 'COMBAT !') {
+          Sound.fightBell();
+        } else {
+          Sound.tick();
+        }
+      }, i * step));
+    });
+    cpsCountdownTimers.push(setTimeout(() => {
+      ov.classList.remove('show');
+      ov.style.display = 'none';
+    }, ms));
+  }
+
+  function setupCpsPreFight(r) {
+    cpsActive = false;
+    myComboCount = 0;
+    if (comboResetTimer) clearTimeout(comboResetTimer);
+    $('#cps-combo-pill')?.classList.remove('active', 'combo-high', 'combo-god');
+    $('#cps-result-card').style.display = 'none';
+    $('#cps-ko-overlay').style.display = 'none';
+    const is1v1 = !r || r.mode !== 'ffa' || (r.players && r.players.length === 2);
+    $('#cps-arena-1v1').style.display = is1v1 ? 'grid' : 'none';
+    $('#cps-arena-ffa').style.display = is1v1 ? 'none' : 'block';
+    $('#cps-mode-title').textContent = is1v1 ? '🥊 DUEL DE VITESSE CPS (1v1)' : '💥 ARÈNE BATTLE ROYALE CPS';
+    $('#cps-objective-text').textContent = is1v1 ? '🥊 Repousse le rayon au K.O. !' : '💥 Max de frappes en 15 secondes !';
+    $('#cps-timer').textContent = (r && r.settings && r.settings.cpsDurationMs ? (r.settings.cpsDurationMs / 1000).toFixed(1) : '15.0') + 's';
+
+    const pList = (r && r.players) ? r.players : [];
+    const me = pList.find((p) => isMe(p.id)) || pList[0] || { name: profile.name, avatar: profile.avatar };
+    const opponent = pList.find((p) => !isMe(p.id)) || pList[1];
+
+    $('#cps-left-name').textContent = me.name + (isMe(me.id) ? ' (Toi)' : '');
+    $('#cps-left-avatar').innerHTML = Avatar.svg(me.avatar);
+    $('#cps-left-clicks').textContent = '0';
+    $('#cps-left-cps').innerHTML = '0.0 <small>CPS</small>';
+    $('#cps-left-mood').textContent = '😤 Prêt au duel !';
+    $('#cps-left-aura').className = 'cps-aura-flames aura-calm';
+
+    if (opponent) {
+      $('#cps-right-name').textContent = opponent.name + (opponent.isBot ? ' 🤖' : '');
+      $('#cps-right-avatar').innerHTML = Avatar.svg(opponent.avatar);
+      $('#cps-right-clicks').textContent = '0';
+      $('#cps-right-cps').innerHTML = '0.0 <small>CPS</small>';
+      $('#cps-right-mood').textContent = '🤖 Prêt au duel !';
+      $('#cps-right-aura').className = 'cps-aura-flames aura-calm';
+    }
+
+    $('#cps-beam-left').style.width = '50%';
+    $('#cps-beam-right').style.width = '50%';
+    $('#cps-clash-core').style.left = '50%';
+    $('#cps-pct-left').textContent = '50%';
+    $('#cps-pct-right').textContent = '50%';
+  }
+
+  // Gestion des événements serveur CPS
+  socket.on('cpsStart', (d) => {
+    cpsActive = true;
+    cpsDuel = d.isDuel;
+    myCpsClicks = 0;
+    myRecentClicks = [];
+    myLiveCps = 0;
+    myPeakCps = 0;
+    myFrenzy = 0;
+    myComboCount = 0;
+    isFrenzyActive = false;
+    cpsParticles = [];
+
+    const ov = $('#cps-countdown');
+    if (ov) {
+      ov.classList.remove('show');
+      ov.style.display = 'none';
+    }
+
+    show('cps');
+    Sound.fightBell();
+
+    $('#cps-result-card').style.display = 'none';
+    $('#cps-ko-overlay').style.display = 'none';
+    const frenzyFill = $('#cps-frenzy-fill');
+    const frenzyPct = $('#cps-frenzy-pct');
+    if (frenzyFill) frenzyFill.style.width = '0%';
+    if (frenzyPct) frenzyPct.textContent = '0%';
+
+    const is1v1 = d.isDuel;
+    $('#cps-arena-1v1').style.display = is1v1 ? 'grid' : 'none';
+    $('#cps-arena-ffa').style.display = is1v1 ? 'none' : 'block';
+    $('#cps-mode-title').textContent = is1v1 ? '🥊 DUEL DE VITESSE CPS (1v1)' : '💥 ARÈNE BATTLE ROYALE CPS';
+    $('#cps-objective-text').textContent = is1v1 ? '🥊 Repousse le rayon au K.O. !' : '💥 Max de frappes en 15 secondes !';
+
+    // Configuration des combattants
+    const me = d.players.find((p) => isMe(p.id)) || d.players[0];
+    const opponent = d.players.find((p) => !isMe(p.id)) || d.players[1] || d.players[0];
+    cpsOpponentId = opponent ? opponent.id : null;
+
+    $('#cps-left-name').textContent = me.name + (isMe(me.id) ? ' (Toi)' : '');
+    $('#cps-left-avatar').innerHTML = Avatar.svg(me.avatar);
+    $('#cps-left-clicks').textContent = '0';
+    $('#cps-left-cps').innerHTML = '0.0 <small>CPS</small>';
+    $('#cps-left-mood').textContent = '🥊 EN GARDE !';
+    $('#cps-left-aura').className = 'cps-aura-flames aura-calm';
+
+    if (opponent) {
+      $('#cps-right-name').textContent = opponent.name + (opponent.isBot ? ' 🤖' : '');
+      $('#cps-right-avatar').innerHTML = Avatar.svg(opponent.avatar);
+      $('#cps-right-clicks').textContent = '0';
+      $('#cps-right-clicks').textContent = '0';
+      $('#cps-right-cps').innerHTML = '0.0 <small>CPS</small>';
+      $('#cps-right-mood').textContent = '🥊 EN GARDE !';
+      $('#cps-right-aura').className = 'cps-aura-flames aura-calm';
+    }
+
+    $('#cps-beam-left').style.width = '50%';
+    $('#cps-beam-right').style.width = '50%';
+    $('#cps-clash-core').style.left = '50%';
+    $('#cps-pct-left').textContent = '50%';
+    $('#cps-pct-right').textContent = '50%';
+
+    if (!is1v1) {
+      renderCpsFfaPillars(d.players);
+    }
+
+    initCpsCanvas();
+    if (cpsAnimFrameId) cancelAnimationFrame(cpsAnimFrameId);
+    renderCpsParticles();
+  });
+
+  socket.on('cpsTick', (d) => {
+    if (!cpsActive) return;
+
+    // Chronomètre
+    const sec = Math.max(0, d.timeLeft / 1000).toFixed(1);
+    $('#cps-timer').textContent = sec + 's';
+    $('#cps-clock-box')?.classList.toggle('danger', d.timeLeft < 4000);
+
+    // 1v1 Tug of war (Tir à la corde énergétique)
+    if (cpsDuel) {
+      const tow = Math.max(0, Math.min(100, d.tugOfWar));
+      $('#cps-beam-left').style.width = tow + '%';
+      $('#cps-beam-right').style.width = (100 - tow) + '%';
+      $('#cps-clash-core').style.left = tow + '%';
+      $('#cps-pct-left').textContent = Math.round(tow) + '%';
+      $('#cps-pct-right').textContent = Math.round(100 - tow) + '%';
+
+      // États d'alerte K.O.
+      $('#cps-fighter-left')?.classList.toggle('danger-ko', tow < 22);
+      $('#cps-fighter-right')?.classList.toggle('danger-ko', tow > 78);
+
+      // Bulles d'émotion dynamiques selon le tir à la corde
+      const leftMood = $('#cps-left-mood');
+      const rightMood = $('#cps-right-mood');
+      if (tow > 68) {
+        if (leftMood) leftMood.textContent = '😈 VICTOIRE EN VUE !';
+        if (rightMood) rightMood.textContent = '😨 TROP RAPIDE !';
+      } else if (tow < 32) {
+        if (leftMood) leftMood.textContent = '💦 AU SECOURS !';
+        if (rightMood) rightMood.textContent = '😈 DANS LES CORDES !';
+      }
+
+      // Données de l'adversaire
+      if (cpsOpponentId && d.players[cpsOpponentId]) {
+        const opData = d.players[cpsOpponentId];
+        $('#cps-right-clicks').textContent = opData.clicks;
+        $('#cps-right-cps').innerHTML = `${opData.cps.toFixed(1)} <small>CPS</small>`;
+        const opTier = getCpsTier(opData.cps);
+        const opTierEl = $('#cps-right-tier');
+        if (opTierEl) {
+          opTierEl.textContent = opTier.label;
+          opTierEl.className = 'cps-tier-badge ' + opTier.cls;
+        }
+
+        const opStage = $('#cps-right-stage');
+        if (opStage && opData.cps > 2) {
+          opStage.classList.remove('punching');
+          void opStage.offsetWidth;
+          opStage.classList.add('punching');
+        }
+
+        const rightAura = $('#cps-right-aura');
+        if (rightAura) {
+          rightAura.className = 'cps-aura-flames ' + opTier.aura;
+        }
+      }
+
+      // Aura dynamique du joueur
+      const myTier = getCpsTier(myLiveCps);
+      const leftAura = $('#cps-left-aura');
+      if (leftAura) {
+        leftAura.className = 'cps-aura-flames ' + myTier.aura;
+      }
+    } else {
+      updateCpsFfaPillars(d.players);
+    }
+  });
+
+  socket.on('cpsGameOver', (d) => {
+    cpsActive = false;
+    if (cpsAnimFrameId) cancelAnimationFrame(cpsAnimFrameId);
+
+    const isWinner = isMe(d.winner);
+    if (d.isKo) {
+      const koOverlay = $('#cps-ko-overlay');
+      if (koOverlay) koOverlay.style.display = 'flex';
+      Sound.ko();
+      const koSub = $('#cps-ko-sub');
+      if (koSub) koSub.textContent = isWinner ? 'VICTOIRE PAR K.O. ÉCRASANTE ! 🏆' : 'K.O. TECHNIQUE ! 💀';
+      setTimeout(() => {
+        if (koOverlay) koOverlay.style.display = 'none';
+        showCpsResults(d);
+      }, 2300);
+    } else {
+      showCpsResults(d);
+    }
+  });
+
+  function showCpsResults(d) {
+    const card = $('#cps-result-card');
+    if (!card) return;
+    card.style.display = 'flex';
+
+    const isWinner = isMe(d.winner);
+    const winPlayer = d.results[0] || {};
+    const myResult = d.results.find((r) => isMe(r.id)) || d.results[0] || {};
+
+    // Titre et sous-titre de fin
+    const titleEl = $('#cps-result-title');
+    const subEl = $('#cps-result-sub');
+    if (titleEl) {
+      titleEl.textContent = isWinner ? (d.isKo ? '💥 K.O. VICTOIRE ÉCRASANTE !' : '🏆 VICTOIRE ÉPIQUE !') : (d.winner === 'tie' ? '🤝 MATCH NUL !' : '💀 DÉFAITE !');
+    }
+    if (subEl) {
+      subEl.textContent = d.isKo ? 'Fin du combat par K.O. direct' : `Duel terminé au chrono (${d.durationSec || 15}s)`;
+    }
+
+    // 🌟 ÉVALUATION DU RANG & NIVEAU DU JOUEUR 🌟
+    const rank = evaluateCpsRank(myResult, isWinner, d.isKo, d.durationSec);
+
+    // Audio & effets du sceau
+    Sound.stamp();
+    if (rank.tierKey === 'sss' || rank.tierKey === 's') {
+      setTimeout(() => Sound.rankFanfare(), 300);
+    } else if (isWinner) {
+      setTimeout(() => Sound.win(), 250);
+    } else {
+      setTimeout(() => Sound.lose(), 250);
+    }
+
+    // Affichage du Sceau de Rang
+    const seal = $('#cps-rank-seal');
+    if (seal) {
+      seal.className = 'cps-rank-seal ' + rank.badgeCls;
+      restartAnim(seal, 'rankStamp');
+    }
+    const rankLetter = $('#cps-rank-letter');
+    if (rankLetter) rankLetter.textContent = rank.grade;
+    const rankStars = $('#cps-rank-stars');
+    if (rankStars) rankStars.textContent = rank.stars;
+    const rankTitle = $('#cps-rank-title');
+    if (rankTitle) rankTitle.textContent = rank.title;
+    const rankLevel = $('#cps-rank-level');
+    if (rankLevel) rankLevel.textContent = rank.level;
+    const rankComment = $('#cps-rank-comment');
+    if (rankComment) rankComment.textContent = `« ${rank.comment} »`;
+
+    // Barre de Maîtrise animée
+    const masteryPct = $('#cps-mastery-pct');
+    const masteryFill = $('#cps-mastery-fill');
+    if (masteryPct) masteryPct.textContent = rank.mastery + '%';
+    if (masteryFill) {
+      masteryFill.style.width = '0%';
+      setTimeout(() => {
+        masteryFill.style.width = rank.mastery + '%';
+      }, 100);
+    }
+
+    // 4 Cartes de statistiques clés
+    const statPeak = $('#cps-stat-peak');
+    if (statPeak) statPeak.textContent = (Number(myResult.peakCps) || 0).toFixed(1) + ' CPS';
+    const statAvg = $('#cps-stat-avg');
+    if (statAvg) statAvg.textContent = (Number(myResult.avgCps) || 0).toFixed(1) + ' CPS';
+    const statClicks = $('#cps-stat-clicks');
+    if (statClicks) statClicks.textContent = myResult.clicks || 0;
+    const statReward = $('#cps-stat-reward');
+    if (statReward) statReward.textContent = rank.rewardLabel;
+
+    // Podium Vainqueur
+    $('#cps-winner-name').textContent = winPlayer.name || 'Gagnant';
+    $('#cps-winner-avatar').innerHTML = Avatar.svg(winPlayer.avatar);
+    $('#cps-winner-coins').textContent = rank.rewardLabel;
+
+    // Crédit des Noob-Bux gagnés
+    updateCoinsDisplay(rank.rewardCoins);
+    plusPop(rank.rewardLabel);
+    if (isWinner) confetti();
+
+    // Tableau comparatif complet de tous les combattants
+    const table = $('#cps-stats-table');
+    if (table) {
+      table.innerHTML = `
+        <div class="cps-stat-row head">
+          <span>Combattant</span>
+          <span>Rang</span>
+          <span>Clics</span>
+          <span>CPS Max</span>
+          <span>CPS Moyen</span>
+        </div>
+      `;
+      d.results.forEach((r, i) => {
+        const rRank = evaluateCpsRank(r, r.id === d.winner, d.isKo, d.durationSec);
+        const row = el('div', 'cps-stat-row' + (isMe(r.id) ? ' me' : ''));
+        row.innerHTML = `
+          <span class="cps-row-name">${i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'} ${r.name}</span>
+          <span class="cps-row-rank-badge ${rRank.badgeCls}">${rRank.grade}</span>
+          <b class="cps-row-clicks">${r.clicks}</b>
+          <span>${r.peakCps} CPS</span>
+          <span>${r.avgCps} CPS</span>
+        `;
+        table.appendChild(row);
+      });
+    }
+  }
+
+  function renderCpsFfaPillars(players) {
+    const box = $('#cps-ffa-pillars');
+    if (!box) return;
+    box.innerHTML = '';
+    players.forEach((p) => {
+      const col = el('div', 'cps-ffa-col' + (isMe(p.id) ? ' me' : ''));
+      col.dataset.pid = p.id;
+      col.innerHTML = `
+        <div class="cps-pillar-avatar">${Avatar.svg(p.avatar)}</div>
+        <div class="cps-pillar-bar">
+          <div class="cps-pillar-fill" style="height: 5%;"></div>
+        </div>
+        <span class="cps-pillar-name">${p.name}</span>
+        <b class="cps-pillar-cps">0 CPS</b>
+      `;
+      box.appendChild(col);
+    });
+  }
+
+  function updateCpsFfaPillars(playersData) {
+    for (const id in playersData) {
+      const col = document.querySelector(`.cps-ffa-col[data-pid="${CSS.escape(id)}"]`);
+      if (col) {
+        const pd = playersData[id];
+        const fill = col.querySelector('.cps-pillar-fill');
+        if (fill) fill.style.height = Math.min(100, Math.max(5, pd.clicks * 1.5)) + '%';
+        const cpsLabel = col.querySelector('.cps-pillar-cps');
+        if (cpsLabel) cpsLabel.textContent = pd.cps + ' CPS';
+      }
+    }
+  }
+
+  // Boutons Revanche & Salon
+  $('#btn-cps-replay')?.addEventListener('click', () => {
+    Sound.go();
+    socket.emit('cpsPlayAgain');
+  });
+
+  $('#btn-cps-lobby')?.addEventListener('click', () => {
+    Sound.click();
+    socket.emit('playAgain');
+    show('lobby');
+  });
+
+  // Action Triche Cheat CPS God pour 00The Ahmed
+  const btnCpsGod = $('#cheat-btn-cpsgod');
+  if (btnCpsGod) {
+    btnCpsGod.addEventListener('click', () => {
+      if (!isCheatUser()) return;
+      socket.emit('cheatCommand', { action: 'cpsGod' });
+      Sound.frenzy();
+      toast('👑 GOD CPS ACTIVÉ (BURST 35 CPS) ! ⚡', 'good');
+      if (cpsActive) {
+        for (let i = 0; i < 15; i++) triggerCpsHit();
+      }
+    });
+  }
 
   // ─────────── Init ───────────
   renderAvatarPreview();

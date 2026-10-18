@@ -174,6 +174,66 @@
       tone(987, 0.08, 'square', 0.12);
       tone(1318, 0.25, 'square', 0.12, null, 0.07);
     },
+    // Nouveaux sons : CPS Fight & Combats de clics
+    punch(variant = 0) {
+      if (muted) return;
+      try {
+        const base = 150 + (variant % 5) * 28 + Math.random() * 20;
+        tone(base, 0.045, 'triangle', 0.13, 40);
+        noise(0.03, 0.06);
+      } catch (e) {}
+    },
+    critPunch() {
+      if (muted) return;
+      try {
+        tone(340, 0.07, 'sawtooth', 0.16, 90);
+        tone(680, 0.05, 'square', 0.12, null, 0.02);
+        noise(0.06, 0.14);
+      } catch (e) {}
+    },
+    ko() {
+      if (muted) return;
+      try {
+        noise(0.45, 0.3);
+        tone(140, 0.38, 'sawtooth', 0.26, 30);
+        tone(280, 0.22, 'square', 0.2, 50, 0.06);
+        setTimeout(() => { if (typeof Sound.oof === 'function') Sound.oof(); }, 220);
+      } catch (e) {}
+    },
+    frenzy() {
+      if (muted) return;
+      try {
+        [440, 587, 740, 988, 1175].forEach((f, i) => tone(f, 0.07, 'sawtooth', 0.13, null, i * 0.035));
+      } catch (e) {}
+    },
+    fightBell() {
+      if (muted) return;
+      try {
+        tone(987, 0.5, 'sine', 0.25, 600);
+        tone(494, 0.7, 'triangle', 0.2, 250);
+      } catch (e) {}
+    },
+    stamp() {
+      if (muted) return;
+      try {
+        noise(0.2, 0.35);
+        tone(120, 0.25, 'triangle', 0.3, 35);
+        tone(240, 0.12, 'sawtooth', 0.18, 50, 0.04);
+      } catch (e) {}
+    },
+    rankFanfare() {
+      if (muted) return;
+      try {
+        [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.18, 'square', 0.14, null, i * 0.08));
+        tone(1567, 0.45, 'triangle', 0.2, null, 0.45);
+      } catch (e) {}
+    },
+    electricZap() {
+      if (muted) return;
+      try {
+        tone(880 + Math.random() * 400, 0.04, 'sawtooth', 0.07, 200);
+      } catch (e) {}
+    },
   };
 
   window.Sound = Sound;

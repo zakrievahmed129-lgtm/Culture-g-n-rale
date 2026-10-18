@@ -1634,3 +1634,1539 @@ input:checked + .toggle-slider:before {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   BATAILLE DE CLICS — CPS FIGHT (TEMPS RÉEL & HYPER VISUEL)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Sélecteur de Jeu sur l'Accueil ─── */
+.gametype-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.gametype-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: #f8fafc;
+  border: 3.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 var(--ink);
+  font-weight: 700;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: visible;
+}
+
+.gametype-btn:hover {
+  transform: translateY(-2px);
+  background: #fff;
+  box-shadow: 0 6px 0 var(--ink);
+}
+
+.gametype-btn.active {
+  background: linear-gradient(135deg, #ffd700, #ff9f1a);
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--ink);
+  border-color: var(--ink);
+}
+
+.gametype-btn.active[data-type="cps"] {
+  background: linear-gradient(135deg, #ff4757, #ff6b81);
+  color: #fff;
+}
+
+.gt-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.gt-title {
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.gt-badge {
+  font-size: 10px;
+  background: #ffeaa7;
+  color: #d63031;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-family: var(--font-title);
+  letter-spacing: 0.5px;
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 1px 0 var(--ink);
+  animation: pulseBadge 1.2s infinite alternate;
+}
+
+.gametype-btn.active .gt-badge {
+  background: #fff;
+  color: #ff4757;
+}
+
+@keyframes pulseBadge {
+  from { transform: scale(0.95); }
+  to   { transform: scale(1.08) rotate(-3deg); }
+}
+
+/* ─── Carte Mini-Jeu Annexe sur l'Accueil ─── */
+.home-minigame-card {
+  margin-top: 18px;
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border: 3.5px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--ink);
+  padding: 14px 16px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.home-minigame-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--ink);
+}
+
+.minigame-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.minigame-tag {
+  font-family: var(--font-title);
+  font-size: 11px;
+  background: #ff5722;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+  letter-spacing: 0.5px;
+}
+
+.minigame-title {
+  font-family: var(--font-title);
+  font-size: 15px;
+  margin: 0;
+  color: var(--ink);
+}
+
+.minigame-desc {
+  font-size: 12.5px;
+  margin: 6px 0 12px 0;
+  color: #4a4a4a;
+  line-height: 1.35;
+}
+
+.minigame-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-cps-launch {
+  font-family: var(--font-title);
+  font-size: 13px !important;
+  padding: 10px 8px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* ─── Écran CPS : En-tête ─── */
+#screen-cps {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 980px;
+  margin: 0 auto;
+  position: relative;
+}
+
+#screen-cps.active {
+  display: flex;
+}
+
+.cps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #fffdf5, #fff5eb);
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cps-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cps-icon-pulse {
+  font-size: 38px;
+  animation: boxingIcon 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes boxingIcon {
+  from { transform: scale(1) rotate(-8deg); }
+  to   { transform: scale(1.2) rotate(8deg); }
+}
+
+.cps-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.cps-sub-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ff4757;
+  text-transform: uppercase;
+}
+
+.cps-main-title {
+  font-family: var(--font-title);
+  font-size: 24px;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+}
+
+.cps-clock-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border: 3.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 6px 16px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.cps-clock-box.danger {
+  background: #ff4757;
+  color: #fff;
+  animation: clockAlarm 0.4s infinite alternate;
+}
+
+.cps-clock-box.danger .cps-clock-label,
+.cps-clock-box.danger .cps-game-clock {
+  color: #fff;
+}
+
+@keyframes clockAlarm {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+
+.cps-clock-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+.cps-game-clock {
+  font-family: var(--font-title);
+  font-size: 24px;
+  color: #ff4757;
+}
+
+.cps-objective-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.cps-obj-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+.cps-obj-text {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: #2f3542;
+}
+
+/* ─── Arène 1v1 Clash ─── */
+.cps-arena-1v1 {
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  gap: 16px;
+  align-items: center;
+  padding: 24px 18px;
+  background: radial-gradient(circle at 50% 50%, #2f3542 0%, #1e272e 100%);
+  border: 4px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 0 10px 0 var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+
+.cps-arena-1v1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255, 255, 255, 0.02) 50px, rgba(255, 255, 255, 0.02) 100px);
+  pointer-events: none;
+}
+
+/* Combattants */
+.cps-fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+/* Bulle d'émotion dynamique au-dessus du combattant */
+.cps-mood-bubble {
+  font-family: var(--font-title);
+  font-size: 11.5px;
+  background: #ffffff;
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px 12px;
+  box-shadow: 0 2.5px 0 var(--ink);
+  white-space: nowrap;
+  animation: moodFloat 1.8s ease-in-out infinite alternate;
+  position: relative;
+  z-index: 6;
+}
+
+.cps-mood-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: var(--ink) transparent;
+  display: block;
+  width: 0;
+}
+
+@keyframes moodFloat {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-4px); }
+}
+
+.cps-fighter.danger-ko {
+  animation: dangerFlinch 0.25s infinite alternate;
+}
+
+.cps-fighter.danger-ko .cps-mood-bubble {
+  background: #ff4757;
+  color: #fff;
+  border-color: #000;
+  animation: shakeDanger 0.2s infinite;
+}
+
+@keyframes shakeDanger {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(-3px, 2px); }
+  100% { transform: translate(3px, -2px); }
+}
+
+@keyframes dangerFlinch {
+  from { transform: translateX(-4px) scale(0.96); filter: drop-shadow(0 0 10px #ff4757); }
+  to   { transform: translateX(4px) scale(0.98); filter: drop-shadow(0 0 20px #ff0000); }
+}
+
+.cps-fighter-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cps-fighter-name {
+  font-family: var(--font-title);
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.cps-tier-badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.tier-0 { background: #dfe4ea; color: #2f3542; }
+.tier-1 { background: #70a1ff; color: #fff; }
+.tier-2 { background: #ffa502; color: #fff; }
+.tier-3 { background: #ff4757; color: #fff; }
+.tier-4 { background: linear-gradient(90deg, #a55eea, #ff6b81, #ffd700); color: #fff; animation: cosmicText 1s infinite alternate; }
+
+@keyframes cosmicText {
+  from { filter: brightness(1) drop-shadow(0 0 4px #a55eea); }
+  to   { filter: brightness(1.3) drop-shadow(0 0 12px #ffd700); }
+}
+
+/* Avatar Stage & Animations */
+.cps-avatar-stage {
+  position: relative;
+  width: 140px;
+  height: 160px;
+  display: grid;
+  place-items: center;
+  transition: transform 0.08s ease-out;
+}
+
+.cps-avatar-wrap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.5));
+  transition: transform 0.06s ease;
+}
+
+.cps-avatar-wrap svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Gants de Boxe Multi-Angles (Anime Barrage Rush) */
+.cps-punch-glove {
+  position: absolute;
+  font-size: 32px;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.06s ease, opacity 0.06s;
+}
+
+.glove-l {
+  right: -8px;
+  transform: scaleX(-1) translateX(0);
+}
+
+.glove-r {
+  left: -8px;
+  transform: translateX(0);
+}
+
+.glove-l-1 { top: 30%; }
+.glove-l-2 { top: 50%; font-size: 36px; }
+.glove-l-3 { top: 70%; }
+
+.glove-r-1 { top: 30%; }
+.glove-r-2 { top: 50%; font-size: 36px; }
+.glove-r-3 { top: 70%; }
+
+/* Animation de Frappe Furieuse (Punching) */
+.cps-avatar-stage.punching .cps-avatar-wrap {
+  transform: scale(1.1) rotate(4deg);
+}
+
+.cps-avatar-stage.punching.punch-alt .cps-avatar-wrap {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+/* Effet Rafale de Poings Joueur Gauche */
+.fighter-left .cps-avatar-stage.punching .glove-l-1 {
+  opacity: 0.9;
+  transform: scaleX(-1) translate(-28px, -10px) scale(1.2) rotate(-15deg);
+}
+.fighter-left .cps-avatar-stage.punching .glove-l-2 {
+  opacity: 1;
+  transform: scaleX(-1) translate(-42px, 0) scale(1.35) rotate(0deg);
+}
+.fighter-left .cps-avatar-stage.punching .glove-l-3 {
+  opacity: 0.85;
+  transform: scaleX(-1) translate(-26px, 12px) scale(1.15) rotate(15deg);
+}
+
+/* Effet Rafale de Poings Joueur Droite */
+.fighter-right .cps-avatar-stage.punching .glove-r-1 {
+  opacity: 0.9;
+  transform: translate(-28px, -10px) scale(1.2) rotate(-15deg);
+}
+.fighter-right .cps-avatar-stage.punching .glove-r-2 {
+  opacity: 1;
+  transform: translate(-42px, 0) scale(1.35) rotate(0deg);
+}
+.fighter-right .cps-avatar-stage.punching .glove-r-3 {
+  opacity: 0.85;
+  transform: translate(-26px, 12px) scale(1.15) rotate(15deg);
+}
+
+/* ─── 5 Auras d'Énergie Spectaculaires ─── */
+.cps-aura-flames {
+  position: absolute;
+  inset: -18px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Aura 1 : Bleu Calme */
+.cps-aura-flames.aura-calm {
+  opacity: 0.65;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(0, 210, 211, 0.15) 55%, transparent 75%);
+  filter: drop-shadow(0 0 12px #3b82f6);
+  animation: auraPulseCalm 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes auraPulseCalm {
+  from { transform: scale(0.95); opacity: 0.5; }
+  to   { transform: scale(1.05); opacity: 0.8; }
+}
+
+/* Aura 2 : Électricité Jaune / Or */
+.cps-aura-flames.aura-electric {
+  opacity: 0.85;
+  background: radial-gradient(circle, rgba(255, 234, 167, 0.6) 0%, rgba(255, 165, 2, 0.25) 50%, transparent 75%);
+  filter: drop-shadow(0 0 18px #ffd700);
+  animation: auraPulseElectric 0.35s infinite alternate;
+}
+
+@keyframes auraPulseElectric {
+  0%   { transform: scale(0.97) rotate(-2deg); filter: drop-shadow(0 0 14px #ffd700); }
+  50%  { transform: scale(1.06) rotate(1deg); filter: drop-shadow(0 0 22px #ffa502); }
+  100% { transform: scale(1.01) rotate(-1deg); filter: drop-shadow(0 0 16px #fffa65); }
+}
+
+/* Aura 3 : Flammes de Feu Rougeoyantes */
+.cps-aura-flames.aura-fire {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(255, 165, 2, 0.65) 0%, rgba(255, 71, 87, 0.35) 50%, transparent 75%);
+  filter: drop-shadow(0 0 22px #ff4757);
+  animation: auraPulseFire 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes auraPulseFire {
+  from { transform: scale(0.96) translateY(2px); }
+  to   { transform: scale(1.12) translateY(-4px); }
+}
+
+/* Aura 4 : Rage Sanglante Berserk */
+.cps-aura-flames.aura-rage {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(255, 0, 85, 0.75) 0%, rgba(183, 21, 64, 0.4) 50%, transparent 75%);
+  filter: drop-shadow(0 0 28px #ff0055);
+  animation: auraPulseRage 0.25s infinite alternate;
+}
+
+@keyframes auraPulseRage {
+  from { transform: scale(0.95) rotate(-3deg); filter: drop-shadow(0 0 20px #eb2f06); }
+  to   { transform: scale(1.15) rotate(3deg); filter: drop-shadow(0 0 35px #ff0055); }
+}
+
+/* Aura 5 : Ultra Instinct Cosmique / Divin */
+.cps-aura-flames.aura-god {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(165, 94, 234, 0.55) 35%, rgba(0, 242, 254, 0.3) 65%, transparent 80%);
+  filter: drop-shadow(0 0 35px #a55eea);
+  animation: auraPulseGod 0.25s infinite alternate;
+}
+
+@keyframes auraPulseGod {
+  0%   { transform: scale(0.96) rotate(-4deg); filter: drop-shadow(0 0 20px #ffd700); }
+  50%  { transform: scale(1.18) rotate(3deg); filter: drop-shadow(0 0 45px #00f2fe); }
+  100% { transform: scale(1.05) rotate(-2deg); filter: drop-shadow(0 0 35px #ff0055); }
+}
+
+.cps-fighter.frenzy-mode .cps-avatar-stage {
+  animation: frenzyStrobe 0.15s infinite alternate;
+}
+
+@keyframes frenzyStrobe {
+  from { filter: brightness(1.15) drop-shadow(0 0 15px #ff3838); transform: scale(1.02); }
+  to   { filter: brightness(1.45) drop-shadow(0 0 30px #ffd700); transform: scale(1.08); }
+}
+
+/* Stats Bar sous l'avatar */
+.cps-stats-bar {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 6px 12px;
+}
+
+.cps-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cps-stat-lbl {
+  font-size: 9px;
+  color: #a4b0be;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.cps-stat-val {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: #fff;
+}
+
+.cps-stat-val.val-cps {
+  color: #fffa65;
+}
+
+.cps-stat-val.val-cps small {
+  font-size: 10px;
+}
+
+/* ─── Centre : Le Rayon d'Énergie (Tir à la Corde) ─── */
+.cps-clash-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 200px;
+  width: 100%;
+}
+
+.cps-beam-gauge {
+  position: relative;
+  width: 100%;
+  height: 42px;
+  background: #0d0d0d;
+  border: 4px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--ink), inset 0 4px 8px rgba(0, 0, 0, 0.85);
+  display: flex;
+  overflow: visible;
+}
+
+.cps-beam-fill {
+  height: 100%;
+  transition: width 0.05s linear;
+}
+
+.cps-beam-fill.fill-left {
+  background: linear-gradient(90deg, #ff4757, #ff6b81, #ffa502, #ffd700);
+  border-radius: 999px 0 0 999px;
+  box-shadow: 0 0 25px rgba(255, 71, 87, 0.85), inset 0 4px 0 rgba(255, 255, 255, 0.55);
+}
+
+.cps-beam-fill.fill-right {
+  background: linear-gradient(90deg, #ffd700, #00d2d3, #3b82f6, #5f27cd);
+  border-radius: 0 999px 999px 0;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.85), inset 0 4px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* Épicentre d'impact animé */
+.cps-clash-core {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  z-index: 10;
+  pointer-events: none;
+  transition: left 0.05s linear;
+}
+
+.cps-core-pulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, #ffffff 35%, #ffd700 70%, transparent 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 32px #fff, 0 0 55px #ffa502, 0 0 75px #ff4757;
+  animation: corePulse 0.18s infinite alternate;
+}
+
+.cps-core-shock-ring {
+  position: absolute;
+  inset: -12px;
+  border: 3px solid #ffd700;
+  border-radius: 50%;
+  animation: ringBurst 0.6s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes ringBurst {
+  0%   { transform: scale(0.6); opacity: 1; border-color: #ffffff; }
+  100% { transform: scale(2.2); opacity: 0; border-color: #ff4757; }
+}
+
+.cps-core-sparks {
+  position: relative;
+  z-index: 2;
+  font-size: 28px;
+  animation: coreRotate 0.35s linear infinite;
+}
+
+@keyframes corePulse {
+  from { transform: scale(0.85); }
+  to   { transform: scale(1.35); }
+}
+
+@keyframes coreRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.cps-clash-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 14px;
+  padding: 0 10px;
+}
+
+.cps-clash-pct {
+  font-family: var(--font-title);
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.cps-clash-vs {
+  font-family: var(--font-title);
+  font-size: 14px;
+  color: #ffd700;
+  letter-spacing: 1.2px;
+  text-shadow: 1.5px 1.5px 0 #000;
+  animation: vsGlow 0.6s infinite alternate;
+}
+
+@keyframes vsGlow {
+  from { opacity: 0.8; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1.08); text-shadow: 0 0 12px #ffd700; }
+}
+
+/* Canvas des particules */
+.cps-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* ─── Arène FFA (Piliers) ─── */
+.cps-arena-ffa {
+  padding: 24px;
+  background: #2f3542;
+  border: 4px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 0 8px 0 var(--ink);
+}
+
+.cps-ffa-pillars {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 16px;
+  min-height: 280px;
+  padding-bottom: 10px;
+}
+
+.cps-ffa-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 120px;
+}
+
+.cps-pillar-avatar {
+  width: 58px;
+  height: 70px;
+}
+
+.cps-pillar-bar {
+  width: 100%;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.6);
+}
+
+.cps-pillar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, #fffa65, #ff4757);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+  transition: height 0.1s ease;
+}
+
+.cps-ffa-col.me .cps-pillar-fill {
+  background: linear-gradient(180deg, #2ed573, #1e90ff);
+  box-shadow: 0 0 20px #2ed573;
+}
+
+.cps-pillar-name {
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.cps-pillar-cps {
+  font-family: var(--font-title);
+  font-size: 15px;
+  color: #ffd700;
+}
+
+/* ─── Jauge de Fureur / Rage ─── */
+.cps-frenzy-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #fff;
+  border: 3.5px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+
+.cps-frenzy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cps-frenzy-title {
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: #ff4757;
+  letter-spacing: 0.5px;
+}
+
+.cps-frenzy-pct {
+  font-family: var(--font-title);
+  font-size: 14px;
+  color: #2f3542;
+}
+
+.cps-frenzy-bar {
+  width: 100%;
+  height: 16px;
+  background: #f1f2f6;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.cps-frenzy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffa502, #ff4757, #ff6b81);
+  border-radius: 999px;
+  transition: width 0.08s ease;
+  box-shadow: 0 0 10px #ff4757;
+}
+
+/* ─── Zone de Frappe & Combo Pill ─── */
+.cps-punch-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 0 10px;
+}
+
+/* Pilule de Combo en direct */
+.cps-combo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #ffd700, #ff9f1a);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  padding: 4px 18px;
+  box-shadow: 0 3px 0 var(--ink);
+  font-family: var(--font-title);
+  font-size: 15px;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+}
+
+.cps-combo-pill.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cps-combo-pill.combo-high {
+  background: linear-gradient(90deg, #ff4757, #ff6b81);
+  color: #fff;
+  border-color: #000;
+  animation: comboPulse 0.4s infinite alternate;
+}
+
+.cps-combo-pill.combo-god {
+  background: linear-gradient(90deg, #a55eea, #ff6b81, #ffd700);
+  color: #fff;
+  border-color: #000;
+  animation: comboPulse 0.25s infinite alternate;
+}
+
+@keyframes comboPulse {
+  from { transform: scale(0.96); filter: drop-shadow(0 0 8px #ffd700); }
+  to   { transform: scale(1.08); filter: drop-shadow(0 0 16px #ff4757); }
+}
+
+.combo-val {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* Bouton Géant de Frappe 3D Tactile */
+.cps-hit-btn {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: 125px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cps-hit-btn-shadow {
+  position: absolute;
+  inset: 0;
+  top: 14px;
+  background: #b71540;
+  border: 4.5px solid var(--ink);
+  border-radius: 26px;
+  box-shadow: 0 10px 0 var(--ink);
+  transition: top 0.05s ease;
+}
+
+.cps-hit-btn-top {
+  position: absolute;
+  inset: 0;
+  bottom: 14px;
+  background: linear-gradient(180deg, #ff4757 0%, #eb2f06 100%);
+  border: 4.5px solid var(--ink);
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #fff;
+  text-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.04s cubic-bezier(0.2, 0.9, 0.3, 1.3), background 0.1s;
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.35);
+}
+
+.cps-hit-btn:hover .cps-hit-btn-top {
+  background: linear-gradient(180deg, #ff6b81 0%, #ff4757 100%);
+}
+
+.cps-hit-btn:active .cps-hit-btn-top,
+.cps-hit-btn.btn-hit-active .cps-hit-btn-top {
+  transform: translateY(12px);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.2);
+}
+
+.cps-hit-emoji {
+  font-size: 34px;
+  line-height: 1;
+  filter: drop-shadow(0 3px 0 var(--ink));
+}
+
+.cps-hit-text {
+  font-family: var(--font-title);
+  font-size: 28px;
+  letter-spacing: 1.5px;
+}
+
+.cps-hit-hint {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.9;
+  letter-spacing: 1px;
+  color: #fffa65;
+}
+
+/* ─── Effets Visuels : Textes de Combat Flottants ─── */
+.cps-floating-text {
+  position: fixed;
+  font-family: var(--font-title);
+  font-size: 26px;
+  color: #ffd700;
+  text-shadow: 2.5px 2.5px 0 var(--ink), -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink);
+  pointer-events: none;
+  z-index: 1000;
+  animation: floatCombatWord 0.75s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes floatCombatWord {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.5) rotate(var(--rot, 0deg));
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -20px) scale(1.3) rotate(var(--rot, 0deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80px) scale(0.9) rotate(var(--rot, 0deg));
+  }
+}
+
+/* Secousses d'Écran */
+.shake-micro {
+  animation: screenMicroShake 0.12s ease-in-out;
+}
+
+@keyframes screenMicroShake {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-3px, 2px); }
+  50%  { transform: translate(3px, -2px); }
+  75%  { transform: translate(-2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.screen-frenzy {
+  box-shadow: inset 0 0 55px rgba(255, 71, 87, 0.55);
+}
+
+/* ─── Overlay K.O. ─── */
+.cps-ko-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: koFadeIn 0.2s ease-out;
+}
+
+.cps-ko-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: koSlam 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+}
+
+.cps-ko-text {
+  font-family: var(--font-title);
+  font-size: 88px;
+  color: #ff4757;
+  text-shadow: 6px 6px 0 var(--ink), 0 0 35px #ff4757;
+  letter-spacing: 4px;
+}
+
+.cps-ko-sub {
+  font-family: var(--font-title);
+  font-size: 24px;
+  color: #ffd700;
+  text-shadow: 3px 3px 0 var(--ink);
+}
+
+@keyframes koSlam {
+  0%   { transform: scale(3.5); opacity: 0; }
+  60%  { transform: scale(0.85); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes koFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   🌟 SYSTÈME D'ÉVALUATION DE NIVEAU & RANG CPS (RÉSULTAT) 🌟
+   ═══════════════════════════════════════════════════════════ */
+.cps-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 26px;
+  background: #fffdf5;
+  border: 4.5px solid var(--ink);
+  border-radius: 24px;
+  box-shadow: 0 10px 0 var(--ink);
+  animation: screenIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.cps-result-banner {
+  text-align: center;
+}
+
+.cps-result-title {
+  font-family: var(--font-title);
+  font-size: 34px;
+  color: #ff4757;
+  text-shadow: 2.5px 2.5px 0 var(--ink);
+  margin: 0;
+}
+
+.cps-result-sub {
+  font-size: 13px;
+  font-weight: 700;
+  color: #747d8c;
+  margin: 4px 0 0 0;
+}
+
+/* ─── Bloc d'Évaluation Officielle ─── */
+.cps-evaluation-box {
+  width: 100%;
+  background: #ffffff;
+  border: 3.5px solid var(--ink);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 5px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cps-eval-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px dashed #ced6e0;
+  padding-bottom: 10px;
+}
+
+.eval-tag {
+  font-family: var(--font-title);
+  font-size: 12px;
+  background: #2f3542;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+.eval-date {
+  font-size: 11px;
+  font-weight: 800;
+  color: #a4b0be;
+  text-transform: uppercase;
+}
+
+/* ─── Hero du Rang : Sceau & Informations ─── */
+.cps-rank-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Sceau / Médaillon Circulaire de Rang */
+.cps-rank-seal-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.cps-rank-seal {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 5px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 6px 0 var(--ink);
+  background: #f1f2f6;
+  animation: rankStamp 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  will-change: transform;
+}
+
+@keyframes rankStamp {
+  0%   { transform: scale(2.8) rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(0.92) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.rank-ring {
+  position: absolute;
+  inset: 4px;
+  border: 2px dashed rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.rank-letter {
+  font-family: var(--font-title);
+  font-size: 40px;
+  line-height: 1;
+  text-shadow: 2px 2px 0 var(--ink);
+  z-index: 2;
+}
+
+.rank-stars {
+  font-size: 12px;
+  color: #ffd700;
+  text-shadow: 1px 1px 0 var(--ink);
+  z-index: 2;
+  margin-top: 2px;
+}
+
+.rank-stamp-label {
+  font-family: var(--font-title);
+  font-size: 10px;
+  background: #ff4757;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 1.5px 0 var(--ink);
+}
+
+/* Thèmes Visuels des Différents Rangs */
+/* Rang SSS+ (Divinité Cosmique) */
+.rank-sss {
+  background: linear-gradient(135deg, #a55eea, #ff6b81, #ffd700);
+  box-shadow: 0 6px 0 var(--ink), 0 0 25px rgba(255, 215, 0, 0.7);
+  animation: rankStamp 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards, sssGlow 1.2s infinite alternate;
+}
+.rank-sss .rank-letter { color: #fff; text-shadow: 3px 3px 0 #000, 0 0 15px #ffd700; }
+
+@keyframes sssGlow {
+  from { filter: drop-shadow(0 0 10px #a55eea); }
+  to   { filter: drop-shadow(0 0 25px #ffd700); }
+}
+
+/* Rang S (Titan Doré) */
+.rank-s {
+  background: linear-gradient(135deg, #ffd700, #ff9f1a);
+  box-shadow: 0 6px 0 var(--ink), 0 0 20px rgba(255, 215, 0, 0.6);
+}
+.rank-s .rank-letter { color: #ffffff; text-shadow: 3px 3px 0 var(--ink); }
+
+/* Rang A (Guerrier Rubis) */
+.rank-a {
+  background: linear-gradient(135deg, #ff4757, #eb2f06);
+  box-shadow: 0 6px 0 var(--ink), 0 0 16px rgba(255, 71, 87, 0.5);
+}
+.rank-a .rank-letter { color: #ffffff; text-shadow: 3px 3px 0 var(--ink); }
+
+/* Rang B (Combattant Acier) */
+.rank-b {
+  background: linear-gradient(135deg, #70a1ff, #1e90ff);
+  box-shadow: 0 6px 0 var(--ink);
+}
+.rank-b .rank-letter { color: #ffffff; text-shadow: 2px 2px 0 var(--ink); }
+
+/* Rang C (Apprenti Bronze) */
+.rank-c {
+  background: linear-gradient(135deg, #eccc68, #d35400);
+  box-shadow: 0 6px 0 var(--ink);
+}
+.rank-c .rank-letter { color: #ffffff; text-shadow: 2px 2px 0 var(--ink); }
+
+/* Rang D (Noob / Chill) */
+.rank-d {
+  background: linear-gradient(135deg, #dfe4ea, #ced6e0);
+  box-shadow: 0 6px 0 var(--ink);
+}
+.rank-d .rank-letter { color: #57606f; text-shadow: 1.5px 1.5px 0 #fff; }
+
+/* Informations et Commentaires du Rang */
+.cps-rank-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.rank-title-badge {
+  font-family: var(--font-title);
+  font-size: 19px;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+}
+
+.rank-level-label {
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: #ff4757;
+  letter-spacing: 1px;
+}
+
+.rank-quote {
+  font-size: 13.5px;
+  color: #2f3542;
+  line-height: 1.4;
+  margin: 0;
+  background: #f8fafc;
+  border-left: 4px solid var(--ink);
+  padding: 6px 12px;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
+
+/* ─── Barre de Maîtrise ─── */
+.cps-mastery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mastery-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mastery-name {
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: #57606f;
+}
+
+.mastery-pct {
+  font-family: var(--font-title);
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.mastery-bar-track {
+  width: 100%;
+  height: 18px;
+  background: #f1f2f6;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.mastery-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ed573, #ffa502, #ff4757);
+  border-radius: 999px;
+  transition: width 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.6);
+}
+
+/* ─── 4 Cartes de Statistiques Récapitulatives ─── */
+.cps-stats-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.cps-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 6px;
+  background: #f8fafc;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 3px 0 var(--ink);
+  text-align: center;
+}
+
+.cps-stat-card.highlight {
+  background: #fff8e1;
+  border-color: #f39c12;
+}
+
+.st-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.st-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #747d8c;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.st-value {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.cps-stat-card.highlight .st-value {
+  color: #d35400;
+}
+
+/* ─── Podium Vainqueur ─── */
+.cps-winner-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f1f2f6;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  padding: 12px 24px;
+  width: 100%;
+}
+
+.cps-winner-avatar {
+  width: 72px;
+  height: 85px;
+}
+
+.cps-winner-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cps-winner-name {
+  font-family: var(--font-title);
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.cps-winner-coins {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: #b8860b;
+}
+
+/* ─── Tableau des Scores ─── */
+.cps-stats-table {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cps-stat-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: 8px 14px;
+  background: #fff;
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+.cps-stat-row.head {
+  background: #dfe4ea;
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: #57606f;
+}
+
+.cps-stat-row.me {
+  background: #fff7d6;
+  border-color: #e67e22;
+}
+
+.cps-row-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cps-row-clicks {
+  color: #ff4757;
+  font-size: 16px;
+}
+
+.cps-row-rank-badge {
+  font-family: var(--font-title);
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink);
+  text-align: center;
+}
+
+/* Responsive CPS Fight */
+@media (max-width: 768px) {
+  .cps-arena-1v1 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
+  }
+  .cps-fighter {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+  }
+  .cps-avatar-stage {
+    width: 90px;
+    height: 110px;
+  }
+  .cps-stats-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .cps-hit-btn {
+    height: 95px;
+  }
+  .cps-hit-text {
+    font-size: 22px;
+  }
+  .cps-hit-hint {
+    display: none;
+  }
+  .cps-ko-text {
+    font-size: 54px;
+  }
+}
+
+

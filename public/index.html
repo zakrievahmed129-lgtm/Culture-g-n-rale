@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Luckiest+Guy&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=3" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
 </head>
 <body>
@@ -19,6 +19,8 @@
     <div class="floaty f4">★</div><div class="floaty f5">?</div><div class="floaty f6">!</div>
   </div>
   <div class="baseplate" aria-hidden="true"></div>
+  <div id="fx" class="fx" aria-hidden="true"></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
 
   <!-- Barre du haut : son, musique, pièces -->
   <header class="top-bar">
@@ -63,7 +65,7 @@
           <label class="field-label" for="input-name">Ton pseudo</label>
           <input id="input-name" class="input" maxlength="16" placeholder="Noob_du_93" autocomplete="off" />
 
-          <span class="field-label">Mode de combat</span>
+          <span class="field-label" id="lbl-mode-picker">Mode de Quiz</span>
           <div class="mode-picker four-modes" id="mode-picker">
             <button class="mode-btn active" data-mode="ffa">
               <span class="mode-big">💥 FFA</span>
@@ -83,22 +85,25 @@
             </button>
           </div>
 
-          <label class="field-label" for="home-category">📚 Thème des questions</label>
-          <select id="home-category" class="input home-category-select">
-            <option value="all" selected>🎲 Toutes les catégories (Mixte)</option>
-            <option value="Jeux vidéo">🎮 Jeux vidéo</option>
-            <option value="Pop Culture">🍿 Pop Culture & Web</option>
-            <option value="Cinéma">🎬 Cinéma & Séries</option>
-            <option value="Sciences">🔬 Sciences & Maths</option>
-            <option value="Histoire">🏛️ Histoire</option>
-            <option value="Géographie">🌍 Géographie</option>
-            <option value="Animaux">🐾 Animaux & Nature</option>
-            <option value="Sport">⚽ Sport</option>
-            <option value="Musique">🎵 Musique</option>
-            <option value="Divers">🧁 Culture Générale & Insolite</option>
-          </select>
+          <div id="home-quiz-settings">
+            <label class="field-label" for="home-category">📚 Thème des questions</label>
+            <select id="home-category" class="input home-category-select">
+              <option value="all" selected>🎲 Toutes les catégories (Mixte)</option>
+              <option value="Jeux vidéo">🎮 Jeux vidéo</option>
+              <option value="Pop Culture">🍿 Pop Culture & Web</option>
+              <option value="Cinéma">🎬 Cinéma & Séries</option>
+              <option value="Sciences">🔬 Sciences & Maths</option>
+              <option value="Histoire">🏛️ Histoire</option>
+              <option value="Géographie">🌍 Géographie</option>
+              <option value="Animaux">🐾 Animaux & Nature</option>
+              <option value="Sport">⚽ Sport</option>
+              <option value="Musique">🎵 Musique</option>
+              <option value="Divers">🧁 Culture Générale & Insolite</option>
+            </select>
+          </div>
 
-          <button id="btn-quick" class="btn btn-green btn-xl">⚡ Partie rapide</button>
+          <button id="btn-quick" class="btn btn-green btn-xl">⚡ Partie rapide (Quiz)</button>
+
           <div class="row">
             <button id="btn-create" class="btn btn-blue">🏠 Créer un salon</button>
             <button id="btn-bots" class="btn btn-yellow">🤖 Vs Bots (Immédiat)</button>
@@ -109,12 +114,29 @@
             <button id="btn-join" class="btn btn-red">Rejoindre</button>
           </div>
 
-          <ul class="rules">
-            <li>💥 <b>Chacun pour soi</b> ou par équipe</li>
-            <li>❓ <b>15 s</b> par question</li>
-            <li>🔥 <b>Séries & Combos</b> x2 pour les rapides</li>
-            <li>💣 <b>Power-ups</b> 50/50, Banane, Bouclier !</li>
+          <ul class="rules" id="home-rules-list">
+            <li>💥 <b>Chacun pour soi</b> ou par équipe (1v1, 2v2, 3v3)</li>
+            <li>❓ <b>15 s</b> par question de Culture Générale</li>
+            <li>🔥 <b>Séries & Combos</b> x2 pour les plus rapides</li>
+            <li>💣 <b>Power-ups</b> 50/50, Banane, Bouclier anti-faute !</li>
           </ul>
+
+          <!-- 🕹️ MINI-JEU SECONDAIRE : BATAILLE DE CLICS (CPS FIGHT) -->
+          <div class="home-minigame-card" id="home-minigame-card">
+            <div class="minigame-head">
+              <span class="minigame-tag">🕹️ MINI-JEU BONUS</span>
+              <h3 class="minigame-title">🥊 Bataille de Clics (CPS Fight)</h3>
+            </div>
+            <p class="minigame-desc">Tir à la corde énergétique en temps réel : clique le plus vite possible pour repousser ton adversaire au K.O. !</p>
+            <div class="minigame-buttons">
+              <button id="btn-launch-cps-1v1" class="btn btn-orange btn-cps-launch" title="Lancer un duel de vitesse de clic 1v1">
+                🥊 Duel 1v1 (CPS)
+              </button>
+              <button id="btn-launch-cps-ffa" class="btn btn-purple btn-cps-launch" title="Lancer une bataille royale de clic à 4">
+                💥 Battle Royale (CPS)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -156,6 +178,13 @@
         <!-- Paramètres personnalisables (Hôte) -->
         <div class="lobby-settings" id="lobby-settings">
           <div class="setting-item">
+            <label class="setting-lbl">🎮 Jeu</label>
+            <select id="sel-gametype" class="setting-select">
+              <option value="quiz" selected>🧠 Quiz Culture G</option>
+              <option value="cps">🥊 Bataille CPS</option>
+            </select>
+          </div>
+          <div class="setting-item" id="lobby-setting-duration">
             <label class="setting-lbl">⏱ Durée</label>
             <select id="sel-duration" class="setting-select">
               <option value="120000">2 min (Blitz)</option>
@@ -164,7 +193,15 @@
               <option value="600000">10 min (Marathon)</option>
             </select>
           </div>
-          <div class="setting-item">
+          <div class="setting-item" id="lobby-setting-cpsduration" style="display: none;">
+            <label class="setting-lbl">⏱ Durée Duel</label>
+            <select id="sel-cpsduration" class="setting-select">
+              <option value="10000">10 s (Sprint)</option>
+              <option value="15000" selected>15 s (Standard)</option>
+              <option value="20000">20 s (Endurance)</option>
+            </select>
+          </div>
+          <div class="setting-item" id="lobby-setting-qtime">
             <label class="setting-lbl">❓ Temps/Question</label>
             <select id="sel-qtime" class="setting-select">
               <option value="10000">10 s (Speedrun)</option>
@@ -172,7 +209,7 @@
               <option value="20000">20 s (Tranquille)</option>
             </select>
           </div>
-          <div class="setting-item">
+          <div class="setting-item" id="lobby-setting-category">
             <label class="setting-lbl">📚 Thème</label>
             <select id="sel-category" class="setting-select">
               <option value="all" selected>🎲 Toutes les catégories</option>
@@ -358,6 +395,244 @@
       </div>
     </section>
 
+    <!-- ═════════════ BATAILLE DE CLICS (CPS FIGHT) ═════════════ -->
+    <section id="screen-cps" class="screen">
+      <!-- Barre d'en-tête CPS -->
+      <div class="cps-header panel">
+        <div class="cps-header-badge">
+          <span class="cps-icon-pulse">🥊</span>
+          <div class="cps-title-wrap">
+            <span class="cps-sub-badge">MINI-JEU TEMPS RÉEL</span>
+            <h2 class="cps-main-title" id="cps-mode-title">DUEL DE VITESSE CPS</h2>
+          </div>
+        </div>
+
+        <div class="cps-clock-box" id="cps-clock-box">
+          <span class="cps-clock-label">⏱ CHRONO DUEL</span>
+          <span class="cps-game-clock" id="cps-timer">15.0s</span>
+        </div>
+
+        <div class="cps-objective-box">
+          <span class="cps-obj-label">OBJECTIF</span>
+          <span class="cps-obj-text" id="cps-objective-text">🥊 Repousse le rayon au K.O. !</span>
+        </div>
+
+        <button id="btn-cps-quit" class="btn btn-red btn-sm" title="Quitter le combat et revenir à l'accueil">✖ Quitter</button>
+      </div>
+
+      <!-- ARÈNE 1v1 DUEL & TEAMS (Clash de Rayons & Boxe) -->
+      <div class="cps-arena-1v1 panel" id="cps-arena-1v1">
+        <!-- Joueur Gauche (Toi / Rouge) -->
+        <div class="cps-fighter fighter-left" id="cps-fighter-left">
+          <div class="cps-mood-bubble" id="cps-left-mood">😤 Échauffement !</div>
+          <div class="cps-fighter-meta">
+            <span class="cps-fighter-name" id="cps-left-name">Toi</span>
+            <span class="cps-tier-badge" id="cps-left-tier">⚡ Échauffement</span>
+          </div>
+          <div class="cps-avatar-stage" id="cps-left-stage">
+            <div class="cps-avatar-wrap" id="cps-left-avatar"></div>
+            <!-- Gants de boxe fantômes multi-angles (anime rush) -->
+            <div class="cps-punch-glove glove-l glove-l-1">🥊</div>
+            <div class="cps-punch-glove glove-l glove-l-2">💥</div>
+            <div class="cps-punch-glove glove-l glove-l-3">🥊</div>
+            <div class="cps-aura-flames" id="cps-left-aura"></div>
+          </div>
+          <div class="cps-stats-bar">
+            <div class="cps-stat-box">
+              <span class="cps-stat-lbl">VITESSE</span>
+              <span class="cps-stat-val val-cps" id="cps-left-cps">0.0 <small>CPS</small></span>
+            </div>
+            <div class="cps-stat-box">
+              <span class="cps-stat-lbl">CLICS</span>
+              <span class="cps-stat-val" id="cps-left-clicks">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Centre : Le Rayon d'Énergie & Tir à la Corde -->
+        <div class="cps-clash-zone" id="cps-clash-zone">
+          <div class="cps-beam-gauge">
+            <div class="cps-beam-fill fill-left" id="cps-beam-left" style="width: 50%;"></div>
+            <div class="cps-beam-fill fill-right" id="cps-beam-right" style="width: 50%;"></div>
+            
+            <!-- Épicentre d'impact animé -->
+            <div class="cps-clash-core" id="cps-clash-core" style="left: 50%;">
+              <div class="cps-core-pulse"></div>
+              <span class="cps-core-sparks">💥</span>
+              <div class="cps-core-shock-ring"></div>
+            </div>
+          </div>
+
+          <div class="cps-clash-info">
+            <span class="cps-clash-pct" id="cps-pct-left">50%</span>
+            <span class="cps-clash-vs">⚡ CLASH ÉNERGÉTIQUE ⚡</span>
+            <span class="cps-clash-pct" id="cps-pct-right">50%</span>
+          </div>
+
+          <!-- Canvas interactif de particules (étincelles, éclairs, ondes de choc) -->
+          <canvas id="cps-canvas" class="cps-canvas"></canvas>
+        </div>
+
+        <!-- Joueur Droite (Adversaire / Bleu) -->
+        <div class="cps-fighter fighter-right" id="cps-fighter-right">
+          <div class="cps-mood-bubble" id="cps-right-mood">🤖 Prêt au combat !</div>
+          <div class="cps-fighter-meta">
+            <span class="cps-fighter-name" id="cps-right-name">Adversaire</span>
+            <span class="cps-tier-badge" id="cps-right-tier">⚡ Échauffement</span>
+          </div>
+          <div class="cps-avatar-stage" id="cps-right-stage">
+            <div class="cps-avatar-wrap" id="cps-right-avatar"></div>
+            <!-- Gants de boxe fantômes adversaire -->
+            <div class="cps-punch-glove glove-r glove-r-1">🥊</div>
+            <div class="cps-punch-glove glove-r glove-r-2">💥</div>
+            <div class="cps-punch-glove glove-r glove-r-3">🥊</div>
+            <div class="cps-aura-flames" id="cps-right-aura"></div>
+          </div>
+          <div class="cps-stats-bar">
+            <div class="cps-stat-box">
+              <span class="cps-stat-lbl">VITESSE</span>
+              <span class="cps-stat-val val-cps" id="cps-right-cps">0.0 <small>CPS</small></span>
+            </div>
+            <div class="cps-stat-box">
+              <span class="cps-stat-lbl">CLICS</span>
+              <span class="cps-stat-val" id="cps-right-clicks">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARÈNE FFA (Multi-joueurs Power Pillars) -->
+      <div class="cps-arena-ffa panel" id="cps-arena-ffa" style="display: none;">
+        <div class="cps-ffa-pillars" id="cps-ffa-pillars"></div>
+      </div>
+
+      <!-- JAUGE DE FUREUR / RAGE SUPER-BURST -->
+      <div class="cps-frenzy-wrap panel">
+        <div class="cps-frenzy-header">
+          <span class="cps-frenzy-title">🔥 JAUGE DE FUREUR (SUPER CLICS x2) :</span>
+          <span class="cps-frenzy-pct" id="cps-frenzy-pct">0%</span>
+        </div>
+        <div class="cps-frenzy-bar">
+          <div class="cps-frenzy-fill" id="cps-frenzy-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- ZONE DE FRAPPE : LE BOUTON GÉANT 3D AVEC COMBO TRACKER -->
+      <div class="cps-punch-zone">
+        <div class="cps-combo-pill" id="cps-combo-pill">
+          <span class="combo-icon">⚡</span>
+          <span class="combo-val" id="cps-combo-val">0</span>
+          <span class="combo-text" id="cps-combo-text">HITS D'AFFILÉE !</span>
+        </div>
+
+        <button id="cps-hit-btn" class="cps-hit-btn" type="button" aria-label="Frappe ici !">
+          <div class="cps-hit-btn-top">
+            <span class="cps-hit-emoji">🥊</span>
+            <span class="cps-hit-text">CLIQUE ICI !</span>
+            <span class="cps-hit-hint">OU APPUYE SUR [ BARRE ESPACE ]</span>
+          </div>
+          <div class="cps-hit-btn-shadow"></div>
+        </button>
+      </div>
+
+      <!-- OVERLAY K.O. DRAMATIQUE & FIN -->
+      <div class="cps-ko-overlay" id="cps-ko-overlay" style="display: none;">
+        <div class="cps-ko-banner" id="cps-ko-banner">
+          <span class="cps-ko-text">K.O. !</span>
+          <span class="cps-ko-sub" id="cps-ko-sub">VICTOIRE ÉCRASANTE !</span>
+        </div>
+      </div>
+
+      <!-- CARTE DE RÉSULTAT CPS & ÉVALUATION DU NIVEAU / RANG -->
+      <div class="cps-result-card panel" id="cps-result-card" style="display: none;">
+        <div class="cps-result-banner" id="cps-result-banner">
+          <h3 class="cps-result-title" id="cps-result-title">🏆 VICTOIRE ÉPIQUE !</h3>
+          <p class="cps-result-sub" id="cps-result-sub">Combat terminé</p>
+        </div>
+
+        <!-- 🌟 GRAND BLOC D'ÉVALUATION DE NIVEAU / RANG DU JOUEUR 🌟 -->
+        <div class="cps-evaluation-box" id="cps-evaluation-box">
+          <div class="cps-eval-head">
+            <span class="eval-tag">🏅 ÉVALUATION OFFICIELLE DU COMBAT</span>
+            <span class="eval-date">Mini-jeu CPS</span>
+          </div>
+
+          <div class="cps-rank-hero">
+            <!-- Grand Médaillon de Rang avec Sceau animé -->
+            <div class="cps-rank-seal-wrap">
+              <div class="cps-rank-seal" id="cps-rank-seal">
+                <div class="rank-ring"></div>
+                <div class="rank-letter" id="cps-rank-letter">SSS+</div>
+                <div class="rank-stars" id="cps-rank-stars">★★★★★</div>
+              </div>
+              <span class="rank-stamp-label" id="cps-rank-stamp-label">HOMOLOGUÉ</span>
+            </div>
+
+            <!-- Titre, Niveau et Commentaire Personnalisé -->
+            <div class="cps-rank-info">
+              <div class="rank-title-badge" id="cps-rank-title">🌌 DIVINITÉ DU CLIC (CYBORG)</div>
+              <div class="rank-level-label" id="cps-rank-level">NIVEAU 99 — MAÎTRE COSMIQUE</div>
+              <p class="rank-quote" id="cps-rank-comment">Inhumain ! Tes doigts défient les lois de la physique. Même les bots tremblent devant toi !</p>
+            </div>
+          </div>
+
+          <!-- Jauge de Maîtrise / Performance Bar -->
+          <div class="cps-mastery-section">
+            <div class="mastery-labels">
+              <span class="mastery-name">⚡ Score de Maîtrise & Cadence</span>
+              <b class="mastery-pct" id="cps-mastery-pct">98%</b>
+            </div>
+            <div class="mastery-bar-track">
+              <div class="mastery-bar-fill" id="cps-mastery-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- 4 Cartes de Statistiques Personnelles Clés -->
+          <div class="cps-stats-summary-grid">
+            <div class="cps-stat-card">
+              <span class="st-icon">⚡</span>
+              <span class="st-label">Pic Max (CPS)</span>
+              <b class="st-value" id="cps-stat-peak">0.0</b>
+            </div>
+            <div class="cps-stat-card">
+              <span class="st-icon">📊</span>
+              <span class="st-label">CPS Moyen</span>
+              <b class="st-value" id="cps-stat-avg">0.0</b>
+            </div>
+            <div class="cps-stat-card">
+              <span class="st-icon">🥊</span>
+              <span class="st-label">Total Frappes</span>
+              <b class="st-value" id="cps-stat-clicks">0</b>
+            </div>
+            <div class="cps-stat-card highlight">
+              <span class="st-icon">🪙</span>
+              <span class="st-label">Butin Gagné</span>
+              <b class="st-value" id="cps-stat-reward">+50 Noob-Bux</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Podium des combattants & Tableau récapitulatif -->
+        <div class="cps-winner-display" id="cps-winner-display">
+          <div class="cps-winner-avatar" id="cps-winner-avatar"></div>
+          <div class="cps-winner-info">
+            <span class="cps-winner-name" id="cps-winner-name">Noob_Master</span>
+            <span class="cps-winner-coins" id="cps-winner-coins">🪙 +50 Noob-Bux</span>
+          </div>
+        </div>
+
+        <div class="cps-stats-table" id="cps-stats-table"></div>
+
+        <div class="row center">
+          <button id="btn-cps-replay" class="btn btn-green btn-xl">🔁 Revanche Immédiate !</button>
+          <button id="btn-cps-lobby" class="btn btn-blue">🏠 Retour au Salon</button>
+        </div>
+      </div>
+
+      <!-- Overlay Compte à rebours CPS 3-2-1-GO -->
+      <div class="countdown-overlay" id="cps-countdown"><span id="cps-countdown-num">3</span></div>
+    </section>
+
     <!-- ═════════════ FIN DE PARTIE ═════════════ -->
     <section id="screen-end" class="screen">
       <div class="end-title" id="end-title">VICTOIRE !</div>
@@ -470,6 +745,7 @@
             <button id="cheat-btn-coins" class="btn btn-purple btn-sm">🪙 +1000 Noob-Bux</button>
             <button id="cheat-btn-shield" class="btn btn-blue btn-sm">🛡️ Bouclier ON</button>
             <button id="cheat-btn-streak" class="btn btn-red btn-sm">⚡ Série x10 Max</button>
+            <button id="cheat-btn-cpsgod" class="btn btn-purple btn-sm">🥊 CPS God (35 CPS)</button>
           </div>
         </div>
       </div>
@@ -480,9 +756,13 @@
     </div>
   </div>
 
+  <!-- Calques d'effets visuels et de notifications toasts -->
+  <div id="fx" class="fx" aria-hidden="true"></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
   <script src="/socket.io/socket.io.js"></script>
-  <script src="avatar.js"></script>
-  <script src="sound.js"></script>
-  <script src="client.js"></script>
+  <script src="avatar.js?v=3"></script>
+  <script src="sound.js?v=3"></script>
+  <script src="client.js?v=3"></script>
 </body>
 </html>
